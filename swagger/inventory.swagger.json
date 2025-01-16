@@ -1,0 +1,455 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Inventory API",
+      "description": "API for managing inventory, including CRUD operations and generating reports.",
+      "version": "1.0.0"
+    },
+    "paths": {
+      "/": {
+        "get": {
+          "summary": "Get all inventory items",
+          "description": "Fetch all inventory items.",
+          "operationId": "getAllInventory",
+          "tags": ["Inventory"],
+          "responses": {
+            "200": {
+              "description": "List of inventory items",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "123"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Product A"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "example": 50
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "summary": "Create new inventory item",
+          "description": "Create a new inventory item.",
+          "operationId": "createInventory",
+          "tags": ["Inventory"],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Product A"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "example": 50
+                    }
+                  },
+                  "required": ["name", "quantity"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Inventory item created successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Inventory item created successfully"
+                      },
+                      "id": {
+                        "type": "string",
+                        "example": "123"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Invalid data"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/report-csv": {
+        "get": {
+          "summary": "Get inventory CSV report",
+          "description": "Generate a CSV report of the inventory.",
+          "operationId": "csvReport",
+          "tags": ["Inventory"],
+          "responses": {
+            "200": {
+              "description": "CSV report generated successfully",
+              "content": {
+                "text/csv": {
+                  "schema": {
+                    "type": "string",
+                    "example": "id,name,quantity\n123,Product A,50\n124,Product B,30"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/report-pdf": {
+        "get": {
+          "summary": "Get inventory PDF report",
+          "description": "Generate a PDF report of the inventory.",
+          "operationId": "pdfReport",
+          "tags": ["Inventory"],
+          "responses": {
+            "200": {
+              "description": "PDF report generated successfully",
+              "content": {
+                "application/pdf": {
+                  "schema": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/{id}": {
+        "get": {
+          "summary": "Get inventory item by ID",
+          "description": "Fetch an inventory item by its ID.",
+          "operationId": "getInventoryById",
+          "tags": ["Inventory"],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "example": "123"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Inventory item details",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "123"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "Product A"
+                      },
+                      "quantity": {
+                        "type": "integer",
+                        "example": 50
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Inventory item not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Item not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "patch": {
+          "summary": "Edit inventory item",
+          "description": "Edit an existing inventory item by its ID.",
+          "operationId": "editInventory",
+          "tags": ["Inventory"],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "example": "123"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Updated Product A"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "example": 100
+                    }
+                  },
+                  "required": ["name", "quantity"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Inventory item updated successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Inventory item updated successfully"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Inventory item not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Item not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "summary": "Update inventory item",
+          "description": "Completely update an inventory item by its ID.",
+          "operationId": "updateInventory",
+          "tags": ["Inventory"],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "example": "123"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Updated Product A"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "example": 100
+                    }
+                  },
+                  "required": ["name", "quantity"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Inventory item updated successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Inventory item updated successfully"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Inventory item not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Item not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "summary": "Delete inventory item",
+          "description": "Delete an inventory item by its ID.",
+          "operationId": "deleteInventory",
+          "tags": ["Inventory"],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "example": "123"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Inventory item deleted successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Inventory item deleted successfully"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Inventory item not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Item not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/allwarehouses/{id}": {
+        "get": {
+          "summary": "Get all warehouses for an inventory item",
+          "description": "Fetch all warehouses associated with an inventory item.",
+          "operationId": "getWarehousesById",
+          "tags": ["Inventory"],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "example": "123"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "List of warehouses for the inventory item",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "warehouseId": {
+                          "type": "string",
+                          "example": "1"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Warehouse A"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

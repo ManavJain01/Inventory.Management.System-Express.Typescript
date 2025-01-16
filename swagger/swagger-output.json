@@ -2,24 +2,13 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "Express Project",
-    "description": "Basic Structure For Express Project",
-    "contact": {
-      "name": "API Support",
-      "email": "nit474011gwl@gmail.com"
-    }
+    "title": "REST API",
+    "description": ""
   },
-  "host": "localhost:5000",
-  "basePath": "/api/",
+  "host": "localhost:3000",
+  "basePath": "/",
   "schemes": [
     "http"
-  ],
-  "securityDefinitions": {},
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
   ],
   "paths": {
     "/admin/": {

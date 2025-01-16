@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "local": "nodemon",
-    "start": "cross-env NODE_ENV=local ts-node ./index.ts && npm run swagger-autogen",
+    "start": "cross-env NODE_ENV=local ts-node ./index.ts",
     "dev": "pnpm run build && NODE_ENV=development node ./dist/index.js",
     "prod": "pnpm run build && NODE_ENV=production node ./dist/index.js",
     "build": "npx tsc",

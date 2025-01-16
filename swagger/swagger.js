@@ -1,30 +1,45 @@
-const options = {
-  openapi: "OpenAPI 3",
-  language: "en-US",
-  disableLogs: false,
-  autoHeaders: false,
-  autoQuery: false,
-  autoBody: false,
-};
-const generateSwagger = require("swagger-autogen")();
+const swaggerAutogen = require("swagger-autogen")();
 
-const swaggerDocument = {
+const doc = {
   info: {
-    version: "1.0.0",
-    title: "Express Project",
-    description: "Basic Structure For Express Project",
-    contact: {
-      name: "API Support",
-      email: "nit474011gwl@gmail.com",
-    },
+    title: "My API",
+    description: "API documentation for my application",
   },
   host: "localhost:5000",
-  basePath: "/api/",
   schemes: ["http"],
-  consumes: ["application/json"],
-  produces: ["application/json"],
-  securityDefinitions: {},
 };
-const swaggerFile = "./docs/swagger.json";
-const apiRouteFile = ["./app/routes.ts"];
-generateSwagger(swaggerFile, apiRouteFile, swaggerDocument);
+
+const outputFile = "./swagger-output.json";
+const endpointsFiles = ["../app/routes.ts"];
+
+swaggerAutogen(outputFile, endpointsFiles).then(() => {
+  console.log("Swagger documentation generated!");
+});
+
+// import fs from 'fs';
+// import path from 'path';
+
+// const swaggerDirectory = path.join(__dirname, 'swagger'); // Adjust the path to your directory
+
+// const loadSwaggerFiles = () => {
+//   const swaggerFiles: any[] = [];
+
+//   // Read all files in the swagger directory
+//   const files = fs.readdirSync(swaggerDirectory);
+
+//   // Filter files with the .swagger.json postfix
+//   const swaggerJsonFiles = files.filter(file => file.endsWith('.swagger.json'));
+
+//   // Load each .swagger.json file
+//   swaggerJsonFiles.forEach(file => {
+//     const filePath = path.join(swaggerDirectory, file);
+//     const fileContent = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+//     swaggerFiles.push(fileContent);
+//   });
+
+//   return swaggerFiles;
+// };
+
+// // Example usage
+// const allSwaggerDocs = loadSwaggerFiles();
+// console.log(allSwaggerDocs);

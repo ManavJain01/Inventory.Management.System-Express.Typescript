@@ -1,0 +1,80 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Common API",
+      "description": "API for common operations like refreshing access token and serving API documentation.",
+      "version": "1.0.0"
+    },
+    "paths": {
+      "/refresh-token": {
+        "get": {
+          "summary": "Refresh access token",
+          "description": "This endpoint is used to refresh the access token for the authenticated user.",
+          "operationId": "refreshAccessToken",
+          "tags": ["Common"],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Access token refreshed successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "accessToken": {
+                        "type": "string",
+                        "example": "new-access-token"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - Invalid credentials or no valid refresh token",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Unauthorized"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/docs": {
+        "get": {
+          "summary": "API Documentation",
+          "description": "This endpoint serves the Swagger UI documentation for the API.",
+          "operationId": "getApiDocs",
+          "tags": ["Common"],
+          "responses": {
+            "200": {
+              "description": "Swagger documentation served successfully"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    }
+  }
+  
