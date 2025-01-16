@@ -1,39 +1,89 @@
 import { sendEmail } from "../../common/services/email.service";
-import { type IInventory } from "./inventory.dto";
+import { type IInventory } from './inventory.dto';
 import { Inventory } from "./inventory.schema";
 import { Parser } from 'json2csv';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import { type Response } from 'express'
 import mongoose from "mongoose";
+import { Stock } from "../stock level/stock.schema";
+import { IStock } from "../stock level/stock.dto";
+import { IProduct } from "../../common/dto/product.dto";
+import { Warehouse } from "../warehouse/warehouse.schema";
+import { IWarehouse } from "../warehouse/warehouse.dto";
 
-export const createInventory = async (data: IInventory) => {
-    const result = await Inventory.create({ ...data });
+export const createInventory = async (data: IProduct) => {
+    const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
 
-    await result.save();
+    if(!name || !price || !warehouse_id || !quantity || !lowStockThreshold){
+        throw new Error("Parameters Missing");
+    }
 
-    return { inventory: result };
+    const product = await Inventory.create({ name, price });
+
+    await product.save();
+
+    const stock = await Stock.create({ product_id: product._id, warehouse_id: warehouse_id, quantity: quantity, lowStockThreshold: lowStockThreshold })
+
+    return { inventory: product, stock };
 };
 
-export const updateInventory = async (id: string, data: IInventory) => {
-    const result = await Inventory.findOneAndUpdate({ _id: id }, data, {
+export const updateInventory = async (id: string, data: IProduct) => {
+    const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
+
+    if(!name || !price){
+        throw new Error("Inventory fields Missing");
+    }
+
+    const product = await Inventory.findOneAndUpdate({ _id: id }, { name, price }, {
         new: true,
     });
-    return result;
-};
 
-export const editInventory = async (id: string, data: Partial<IInventory>) => {
-    const result = await Inventory.findOneAndUpdate({ _id: id }, data);
-
-    if(!result){
+    if(!product){
         throw new Error("Product not found");
     }
 
-    // if(result.quantity <= result.lowStockThreshold){
-    //     await sendEmailForLowStock(result as IInventory);
-    // }
+    if(( quantity || lowStockThreshold ) && !warehouse_id){
+        throw new Error("warehouse_id missing");
+    } else if(warehouse_id && ( quantity || lowStockThreshold )){
+        const stockData = { quantity, lowStockThreshold }
+        const stock = await Stock.findOneAndUpdate({ "product_id" : id, "warehouse_id" : warehouse_id }, stockData);
+        
+        if(!stock) throw new Error("Stock Not Found");
+        
+        if(stock.quantity <= stock.lowStockThreshold){
+            const warehouse = await Warehouse.findById(warehouse_id);
+            await sendEmailForLowStock(product as IInventory, stock as IStock, warehouse as IWarehouse);
+        }
+    }
 
-    return result;
+    return product;
+};
+
+export const editInventory = async (id: string, data: Partial<IProduct>) => {
+    const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
+
+    const product = await Inventory.findOneAndUpdate({ _id: id }, { name, price });
+
+    if(!product){
+        throw new Error("Product not found");
+    }
+
+    if(( quantity || lowStockThreshold ) && !warehouse_id){
+        throw new Error("warehouse_id missing");
+    } else if(warehouse_id && ( quantity || lowStockThreshold )){
+        const stockData = { quantity, lowStockThreshold }
+        const stock = await Stock.findOneAndUpdate({ "product_id" : id, "warehouse_id" : warehouse_id }, stockData);
+        
+        if(!stock) throw new Error("Stock Not Found");
+        
+        if(stock.quantity <= stock.lowStockThreshold){
+            const warehouse = await Warehouse.findById(warehouse_id);
+            await sendEmailForLowStock(product as IInventory, stock as IStock, warehouse as IWarehouse);
+        }
+    }
+
+    return product;
 };
 
 export const deleteInventory = async (id: string) => {
@@ -51,7 +101,28 @@ export const getAllInventory = async () => {
     return result;
 };
 
-export const sendEmailForLowStock = async (product: IInventory) => {
+export const getWarehousesById = async (productId :object) => {
+    const stocks: [IStock] = await Stock.find({ product_id: productId }).lean();
+
+    if (!stocks) {
+        throw new Error("No Stock Found!!!");
+    }
+
+    const warehouses: Array<Object> = [];
+
+    // Use for...of loop for async/await to work properly
+    for (const stock of stocks) {
+        const warehouse = await Warehouse.find({ _id: stock.warehouse_id }); // Find by warehouse_id
+        
+        if (warehouse.length > 0) {
+            warehouses.push(warehouse[0]);
+        }
+    }
+
+    return warehouses;
+};
+
+export const sendEmailForLowStock = async (product :IInventory, stock :IStock, warehouse :IWarehouse) => {
     const mailOptions = {
         from: process.env.MAIL_USER!, // Replace with your sender email
         to: "rocker17manav@gmail.com",
@@ -61,7 +132,9 @@ export const sendEmailForLowStock = async (product: IInventory) => {
             <p>We noticed that the following product is running low in the warehouse inventory:</p>
             <ul>
                 <li><strong>Product Name:</strong> ${product.name}</li>
-                <li><strong>Price:</strong> ${product.price}</li>
+                <li><strong>Warehouse:</strong> ${warehouse.name}, <strong>Location:</strong> ${warehouse.location}</li>
+                <li><strong>Stock Quantity:</strong> ${stock.quantity}</li>
+                <li><strong>It is advisable to store atleast </strong>${stock.lowStockThreshold + 1}</li>
             </ul>
             <p>Please take the necessary action to restock this item.</p>
             <p>Thank you,</p>
@@ -88,17 +161,44 @@ const fetchProductWithTimeStamp = async (startDate :string, endDate :string) => 
 }
 
 export const csvReport = async (startDate :string, endDate: string) => {
-    let inventoryData :Array<Object> = [];
+    // let inventoryData :Array<Object> = [];
 
-    if(startDate && endDate){
-        inventoryData = await fetchProductWithTimeStamp(startDate, endDate);     
-    } else {
-        inventoryData = await getAllInventory();
-    }
+    // if(startDate && endDate){
+    //     inventoryData = await fetchProductWithTimeStamp(startDate, endDate);     
+    // } else {
+    //     inventoryData = await getAllInventory();
+    // }
     
-    const fields = ['name', 'quantity', 'warehouse', 'lowStockThreshold']; // Fields for CSV
+    // const fields = ['name', 'price', 'warehouse', 'lowStockThreshold']; // Fields for CSV
+    // const parser = new Parser({ fields });
+    // return parser.parse(inventoryData);
+
+    const fields = ['name', 'price', 'warehouse', 'location', 'quantity', 'lowStockThreshold'];
+
+    // Fetch data from the database
+    const stock: IStock[] = await Stock.find({}).lean();
+    const inventory: IInventory[] = await Inventory.find({}).lean();
+    const warehouses: IWarehouse[] = await Warehouse.find({}).lean();
+
+    // Flatten data by joining inventory, warehouse, and stock
+    const flattenedData = stock.map((stockEntry) => {
+        const product = inventory.find((item) => item._id.toString() === stockEntry.product_id.toString());
+        const warehouse = warehouses.find((wh) => wh._id.toString() === stockEntry.warehouse_id.toString());
+
+        return {
+            name: product?.name || 'Unknown',
+            price: product?.price || 0,
+            warehouse: warehouse?.name || 'Unknown',
+            location: warehouse?.location || 'Unknown',
+            quantity: stockEntry.quantity,
+            lowStockThreshold: stockEntry.lowStockThreshold,
+        };
+    });
+
+    // Convert the flattened data into CSV
     const parser = new Parser({ fields });
-    return parser.parse(inventoryData);
+    const csv = parser.parse(flattenedData);
+    return csv
 };
 
 export const pdfReport = async (res: Response, startDate :string, endDate :string) => {

@@ -36,6 +36,11 @@ export const getAllInventory = asyncHandler(async (req: Request, res: Response) 
     res.send(createResponse(result))
 });
 
+export const getWarehousesById = asyncHandler(async (req: Request, res: Response) => {
+    const result = await inventoryService.getWarehousesById(req.params.id as Object);
+    res.send(createResponse(result))
+});
+
 export const csvReport = asyncHandler(async (req: Request, res: Response) => {    
     const csvData = await inventoryService.csvReport(req.query.startDate as string, req.query.endDate as string);
     res.header('Content-Type', 'text/csv');
