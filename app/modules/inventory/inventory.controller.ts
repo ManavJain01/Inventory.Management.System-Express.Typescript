@@ -35,3 +35,14 @@ export const getAllInventory = asyncHandler(async (req: Request, res: Response) 
     const result = await inventoryService.getAllInventory();
     res.send(createResponse(result))
 });
+
+export const csvReport = asyncHandler(async (req: Request, res: Response) => {    
+    const csvData = await inventoryService.csvReport(req.query.startDate as string, req.query.endDate as string);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('inventory-report.csv');
+    res.send(csvData);
+});
+
+export const pdfReport = asyncHandler(async (req: Request, res: Response) => {
+    await inventoryService.pdfReport(res, req.query.startDate as string, req.query.endDate as string);
+});

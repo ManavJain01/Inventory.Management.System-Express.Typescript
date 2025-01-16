@@ -1,7 +1,6 @@
 import { type IUser } from "./user.dto";
 import { User } from "./user.schema";
 import { generateAccessTokenAndRefreshToken } from "../../common/helper/jwt.helper";
-import { sendEmail } from "../../common/services/email.service";
 import { isCorrectPassword } from "../admin/admin.service";
 
 export const createUser = async (data: IUser) => {
@@ -12,18 +11,6 @@ export const createUser = async (data: IUser) => {
     result.refreshToken = refreshToken;
 
     await result.save();
-
-    const invitationLink = `http://localhost:3000/invite-user?token=${accessToken}`;
-
-    // Step 4: Send email with user's credentials
-    const mailOptions = {
-        from: process.env.MAIL_USER!, // Replace with your sender email
-        to: result.email,
-        subject: "Welcome to Our Platform",
-        text: `Hello ${result.name},\n\nYour account has been created successfully.\n\nCredentials:\nEmail: ${result.email}\nPassword: (set the password here ${invitationLink})\n\nThank you for joining us!\n\nBest Regards,\nYour Company`,
-      };
-  
-      await sendEmail(mailOptions);
 
     return { user: result, accessToken, refreshToken };
 };
@@ -82,8 +69,8 @@ export const loginUser = async (data: IUser) => {
     return { user: user, accessToken, refreshToken };
 };
 
-export const logoutUser = async (user: IUser) => {
-    const fetchUser = await User.findById(user._id);
+export const logoutUser = async (userId:string) => {
+    const fetchUser = await User.findById(userId);
 
     if (!fetchUser) {
         throw new Error("User not found");

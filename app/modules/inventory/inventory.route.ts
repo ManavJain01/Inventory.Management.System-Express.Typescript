@@ -6,11 +6,15 @@ import * as inventoryValidator from "./inventory.validation";
 const router = Router();
 
 router.get("/", inventoryController.getAllInventory);
+router.get("/report-csv", inventoryController.csvReport);
+router.get("/report-pdf", inventoryController.pdfReport);
 router.get("/:id", inventoryController.getInventoryById);
 router.post("/", inventoryController.createInventory);
 router.patch("/:id", inventoryController.editInventory);
 router.put("/:id", inventoryController.updateInventory);
 // router.put("/", inventoryValidator.updateInventory, catchError, inventoryController.updateInventory);
 router.delete("/:id", inventoryController.deleteInventory);
+
+
 
 export default router;

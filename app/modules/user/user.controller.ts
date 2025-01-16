@@ -50,6 +50,6 @@ export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
         });
     }
 
-    await userService.logoutUser(req.user as IUser);
+    await userService.logoutUser(req.user._id);
     res.send(createResponse("User logout successfully"))
 });
