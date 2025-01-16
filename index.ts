@@ -6,7 +6,7 @@ import http from "http";
 import { initDB } from "./app/common/services/database.service";
 import { initPassport } from "./app/common/services/passport-jwt.service";
 import { loadConfig } from "./app/common/helper/config.hepler";
-import { type IUser } from "./app/user/user.dto";
+import { type IUser } from "./app/modules/user/user.dto";
 import errorHandler from "./app/common/middleware/error-handler.middleware";
 import routes from "./app/routes";
 

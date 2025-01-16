@@ -1,7 +1,7 @@
 import { type IUser } from "./user.dto";
 import { User } from "./user.schema";
-import { generateAccessTokenAndRefreshToken } from "../common/helper/jwt.helper";
-import { sendEmail } from "../common/services/email.service";
+import { generateAccessTokenAndRefreshToken } from "../../common/helper/jwt.helper";
+import { sendEmail } from "../../common/services/email.service";
 import { isCorrectPassword } from "../admin/admin.service";
 
 export const createUser = async (data: IUser) => {

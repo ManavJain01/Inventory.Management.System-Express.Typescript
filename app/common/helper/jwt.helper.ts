@@ -1,5 +1,4 @@
-import { type IJWT } from "../dto/jwt.dto";
-import { type IUser } from "../../user/user.dto";
+import { type IUser } from "../../modules/user/user.dto";
 import jwt from "jsonwebtoken";
 import createHttpError from "http-errors";
 

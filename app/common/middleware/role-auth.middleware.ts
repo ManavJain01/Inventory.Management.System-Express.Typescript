@@ -1,10 +1,9 @@
 import { type NextFunction, type Request, type Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import createHttpError from "http-errors";
-import { type IUser } from "../../user/user.dto";
-import { User } from "../../user/user.schema";
+import { type IUser } from "../../modules/user/user.dto";
+import { User } from "../../modules/user/user.schema";
 import { decodeAccessToken } from "../helper/jwt.helper";
-import { IJWT } from "../dto/jwt.dto";
 
 const fetchUser = async (id:string) => {
   return await User.findById(id).lean();

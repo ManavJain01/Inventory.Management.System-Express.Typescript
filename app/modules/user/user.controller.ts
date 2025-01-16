@@ -1,6 +1,6 @@
 
 import * as userService from "./user.service";
-import { createResponse } from "../common/helper/response.hepler";
+import { createResponse } from "../../common/helper/response.hepler";
 import asyncHandler from "express-async-handler";
 import { type Request, type Response } from 'express'
 import createHttpError from "http-errors";

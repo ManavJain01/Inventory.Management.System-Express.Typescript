@@ -1,6 +1,6 @@
 import { type IUser } from "../user/user.dto";
 import { User } from "../user/user.schema";
-import { decodeAccessToken, generateAccessTokenAndRefreshToken } from "../common/helper/jwt.helper";
+import { decodeAccessToken, generateAccessTokenAndRefreshToken } from "../../common/helper/jwt.helper";
 
 import bcrypt from 'bcrypt';
 
@@ -48,17 +48,4 @@ export const getUserByLogin = async (data: IUser) => {
     const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(user);
 
     return { user: user, accessToken, refreshToken };
-};
-
-export const restrictUser = async (data: IUser, userId: string) => {
-    const { isBlock } = data;
-    const result = await User.findByIdAndUpdate(userId, { isBlock: isBlock });
-
-    return;
-};
-
-export const activeSessions = async () => {
-    const onlineSessions = await User.findOne({ isActive: true });
-
-    return onlineSessions;
 };
