@@ -29,9 +29,9 @@ export const editInventory = async (id: string, data: Partial<IInventory>) => {
         throw new Error("Product not found");
     }
 
-    if(result.quantity <= result.lowStockThreshold){
-        await sendEmailForLowStock(result as IInventory);
-    }
+    // if(result.quantity <= result.lowStockThreshold){
+    //     await sendEmailForLowStock(result as IInventory);
+    // }
 
     return result;
 };
@@ -61,9 +61,7 @@ export const sendEmailForLowStock = async (product: IInventory) => {
             <p>We noticed that the following product is running low in the warehouse inventory:</p>
             <ul>
                 <li><strong>Product Name:</strong> ${product.name}</li>
-                <li><strong>Stock Count:</strong> ${product.quantity}</li>
-                <li><strong>Warehouse:</strong> ${product.warehouse}</li>
-                <li><strong>Atleast store </strong> ${product.lowStockThreshold + 1} items</li>
+                <li><strong>Price:</strong> ${product.price}</li>
             </ul>
             <p>Please take the necessary action to restock this item.</p>
             <p>Thank you,</p>
@@ -124,7 +122,7 @@ export const pdfReport = async (res: Response, startDate :string, endDate :strin
     }
 
     inventoryData.forEach(item => {
-        doc.fontSize(12).text(`Name: ${item.name} | Quantity: ${item.quantity} | Warehouse: ${item.warehouse} | Threshold Stock: ${item.lowStockThreshold}`);
+        doc.fontSize(12).text(`Name: ${item.name} | Price: ${item.price}`);
     });
 
     doc.end();

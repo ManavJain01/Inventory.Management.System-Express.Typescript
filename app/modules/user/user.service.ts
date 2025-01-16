@@ -23,10 +23,6 @@ export const updateUser = async (id: string, data: IUser) => {
 };
 
 export const editUser = async (id: string, data: Partial<IUser>) => {
-    console.log("in edit:", data);
-    console.log("id", id);
-    
-    
     const result = await User.findOneAndUpdate({ _id: id }, data);
     return result;
 };
