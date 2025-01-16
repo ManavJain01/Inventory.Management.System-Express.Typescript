@@ -15,7 +15,7 @@ export const updateInventory = asyncHandler(async (req: Request, res: Response) 
 });
 
 export const editInventory = asyncHandler(async (req: Request, res: Response) => {
-    const result = await inventoryService.editInventory(req.body, req.body);
+    const result = await inventoryService.editInventory(req.params.id, req.body);
     res.send(createResponse(result, "Inventory updated successfully"))
 });
 

@@ -16,12 +16,6 @@ const UserSchema = new Schema<IUser>({
         role: { type: String, required: true, enum: ["USER", "ADMIN"], default: "USER" },
         password: { type: String, required: true },
         refreshToken: { type: String },
-        isBlock: { type: Boolean, required: true, default: false },
-        isActive: { type: Boolean, required: true, default: false },
-        isOnboard: { type: Boolean, default: false },
-        isKycComplete: { type: Boolean, default: false },
-        twoFactorEnabled: { type: Boolean, default: false },
-        documents: { type: [String] },
 }, { timestamps: true });
 
 UserSchema.pre("save", async function (next) {

@@ -7,8 +7,9 @@ const router = Router();
 
 router.get("/", inventoryController.getAllInventory);
 router.get("/:id", inventoryController.getInventoryById);
-// router.post("/", inventoryValidator.createInventory, catchError, inventoryController.createInventory);
-// router.patch("/", inventoryValidator.editInventory, catchError, inventoryController.editInventory);
+router.post("/", inventoryController.createInventory);
+router.patch("/:id", inventoryController.editInventory);
+router.put("/:id", inventoryController.updateInventory);
 // router.put("/", inventoryValidator.updateInventory, catchError, inventoryController.updateInventory);
 router.delete("/:id", inventoryController.deleteInventory);
 

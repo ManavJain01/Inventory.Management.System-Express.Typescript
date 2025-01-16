@@ -10,7 +10,6 @@ export const createUser = async (data: IUser) => {
     const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(result, "userCreating");
 
     result.refreshToken = refreshToken;
-    result.isActive = true;
 
     await result.save();
 
@@ -89,8 +88,7 @@ export const logoutUser = async (user: IUser) => {
     if (!fetchUser) {
         throw new Error("User not found");
     }
-    
-    fetchUser.isActive = false;
+
     await fetchUser.save();
 
     return;

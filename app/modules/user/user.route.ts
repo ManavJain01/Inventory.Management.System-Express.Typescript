@@ -7,9 +7,10 @@ const router = Router();
 
 router.get("/", userController.getAllUser);
 router.get("/:id", userController.getUserById);
-// router.delete("/:id", userController.deleteUser);
+router.delete("/:id", userController.deleteUser);
 router.post("/", userValidator.createUser, catchError, userController.createUser);
-router.patch("/", catchError, userController.editUser);
+router.patch("/:id", catchError, userController.editUser);
+router.put("/:id", catchError, userController.updateUser);
 router.post("/logout", catchError, userController.logoutUser);
 
 export default router;

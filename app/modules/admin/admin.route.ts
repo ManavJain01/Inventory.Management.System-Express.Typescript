@@ -6,6 +6,6 @@ import * as adminController from "./admin.controller";
 const router = Router();
 
 router.post("/", catchError, adminController.createUser);
-router.post("/login", adminController.getUserByLogin)
+router.post("/login", adminController.loginUser)
 
 export default router;

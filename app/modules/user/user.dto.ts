@@ -5,12 +5,5 @@ export interface IUser extends BaseSchema {
         email: string;
         role: "USER" | "ADMIN";
         password: string,
-        isBlock: boolean,
-        isActive: boolean,
-        userId: object
-        isOnboard: boolean,
-        isKycComplete: boolean,
-        twoFactorEnabled: boolean,
-        documents: Array<string>
         refreshToken: string
 }

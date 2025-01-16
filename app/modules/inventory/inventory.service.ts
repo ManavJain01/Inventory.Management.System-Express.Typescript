@@ -17,10 +17,6 @@ export const updateInventory = async (id: string, data: IInventory) => {
 };
 
 export const editInventory = async (id: string, data: Partial<IInventory>) => {
-    console.log("in edit:", data);
-    console.log("id", id);
-    
-    
     const result = await Inventory.findOneAndUpdate({ _id: id }, data);
     return result;
 };

@@ -8,7 +8,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
     res.send(createResponse(result, "User created sucssefully"))
 });
 
-export const getUserByLogin = asyncHandler(async (req: Request, res: Response) => {
-    const result = await adminService.getUserByLogin(req.body);
+export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+    const result = await adminService.loginUser(req.body);
     res.send(createResponse(result, "User login successfully"))
 });

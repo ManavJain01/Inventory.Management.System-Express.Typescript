@@ -10,8 +10,7 @@ export const createUser = async (data: IUser) => {
     const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(result);
 
     result.refreshToken = refreshToken;
-    result.isActive = true;
-
+    result.role = "ADMIN";
     await result.save();
 
     return { user: result, accessToken, refreshToken };
@@ -28,7 +27,7 @@ export const isCorrectPassword = async (dbPassword: string, incomingPassword: st
     else return false;
 }
 
-export const getUserByLogin = async (data: IUser) => {
+export const loginUser = async (data: IUser) => {
     const { email, password } = data;
     const user = await User.findOneAndUpdate(
         { email },              // Filter: Find by email

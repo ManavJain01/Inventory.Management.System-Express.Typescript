@@ -14,7 +14,7 @@ import swaggerJsonFile from "../docs/swagger.json"
 const router = express.Router();
 
 router.use("/admin", adminRoutes);
-router.use("/users", roleAuthMiddleware, userRoutes);
+router.use("/users", userRoutes);
 router.use("/inventory", inventoryRoutes);
 // router.post("/login", catchError, userController.loginUser);
 router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJsonFile));

@@ -17,13 +17,7 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const editUser = asyncHandler(async (req: Request, res: Response) => {
-    if(!req.user){
-        throw createHttpError(403, {
-            message: "Invalid or unauthorized user role",
-        });
-    }
-
-    const result = await userService.editUser(req.user._id, req.body);
+    const result = await userService.editUser(req.params.id, req.body);
     res.send(createResponse(result, "User updated sucssefully"))
 });
 
