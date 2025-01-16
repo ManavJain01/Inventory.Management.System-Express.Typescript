@@ -3,8 +3,7 @@ import * as commonController from "./common.controller";
 import { roleAuthMiddleware } from "../../common/middleware/role-auth.middleware";
 // Swagger
 import swaggerUi from "swagger-ui-express";
-import swaggerJsonFile from "../../../docs/swagger.json"
-// import swaggerJsonFile from "../../../swagger/swagger.json"
+import swaggerJsonFile from "../../../swagger/show_swagger.json"
 
 const router = Router();
 
