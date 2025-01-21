@@ -7,9 +7,9 @@ const router = Router();
 
 router.get("/", stockController.getAllStock);
 router.get("/:id", stockController.getStockById);
-router.post("/", stockController.createStock);
-router.patch("/:id", stockController.editStock);
-router.put("/:id", stockController.updateStock);
+router.post("/", stockValidator.createInventory, catchError, stockController.createStock);
+router.patch("/:id", stockValidator.editInventory, catchError, stockController.editStock);
+router.put("/:id", stockValidator.updateInventory, catchError, stockController.updateStock);
 router.delete("/:id", stockController.deleteStock);
 
 export default router;

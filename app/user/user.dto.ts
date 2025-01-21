@@ -5,5 +5,5 @@ export interface IUser extends BaseSchema {
         email: string;
         role: "USER" | "ADMIN";
         password: string,
-        refreshToken: string
+        refreshToken: string | undefined
 }

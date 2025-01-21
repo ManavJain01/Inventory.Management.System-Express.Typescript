@@ -53,3 +53,18 @@ export const decodeAccessToken = async (encryptedAccessToken : string) => {
 
     return payload;
 }
+
+export const decodeRefreshToken = async (encryptedRefreshToken : string) => {
+    const { REFRESH_TOKEN } = getEnvTokens();
+
+    // Verify token and attach the user information to the request object
+    const payload = jwt.verify(encryptedRefreshToken, REFRESH_TOKEN);
+
+    if (typeof payload !== "object" || payload === null || !payload._id || !payload.role) {
+        throw createHttpError(403, {
+        message: "Invalid Token",
+        });
+    }
+
+    return payload;
+}

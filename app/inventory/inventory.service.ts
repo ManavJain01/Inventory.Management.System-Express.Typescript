@@ -13,10 +13,10 @@ import { Warehouse } from "../warehouse/warehouse.schema";
 import { IWarehouse } from "../warehouse/warehouse.dto";
 
 /**
- * Creates a new inventory item and its corresponding stock entry.
- * @param {IProduct} data - The product data containing name, price, warehouse_id, quantity, and lowStockThreshold.
- * @returns {Promise<{inventory: IInventory, stock: IStock}>} - The created inventory and stock entry.
- * @throws {Error} - If any required parameter is missing.
+ * Creates a new inventory item and an associated stock entry.
+ * @param {IProduct} data - The product data to be created.
+ * @returns {Promise<{inventory: IInventory, stock: IStock}>} - The created inventory item and its associated stock entry.
+ * @throws {Error} - If required fields are missing.
  */
 export const createInventory = async (data: IProduct) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
@@ -37,9 +37,9 @@ export const createInventory = async (data: IProduct) => {
 /**
  * Updates an inventory item and optionally its corresponding stock entry.
  * @param {string} id - The ID of the inventory item to update.
- * @param {IProduct} data - The updated product data.
+ * @param {IProduct} data - The product data for updating.
  * @returns {Promise<IInventory>} - The updated inventory item.
- * @throws {Error} - If required fields are missing or the product is not found.
+ * @throws {Error} - If the product is not found or required fields are missing.
  */
 export const updateInventory = async (id: string, data: IProduct) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
@@ -74,11 +74,12 @@ export const updateInventory = async (id: string, data: IProduct) => {
 };
 
 /**
- * Partially updates an inventory item and optionally its corresponding stock entry.
+ * Partially updates an existing inventory item by its ID.
+ * 
  * @param {string} id - The ID of the inventory item to update.
- * @param {Partial<IProduct>} data - The partial product data for updating.
+ * @param {Partial<IProduct>} data - The partial product data to update. Only the fields provided will be updated.
+ * @throws {Error} - If the product is not found, or if warehouse_id is missing when updating quantity or lowStockThreshold.
  * @returns {Promise<IInventory>} - The updated inventory item.
- * @throws {Error} - If the product is not found or required fields are missing.
  */
 export const editInventory = async (id: string, data: Partial<IProduct>) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
@@ -107,9 +108,10 @@ export const editInventory = async (id: string, data: Partial<IProduct>) => {
 };
 
 /**
- * Deletes an inventory item by ID.
+ * Deletes an existing inventory item by its ID.
+ * 
  * @param {string} id - The ID of the inventory item to delete.
- * @returns {Promise<Object>} - The result of the deletion operation.
+ * @returns {Promise<DeleteResult>} - The result of the deletion.
  */
 export const deleteInventory = async (id: string) => {
     const result = await Inventory.deleteOne({ _id: id });
@@ -127,9 +129,9 @@ export const getInventoryById = async (id: string) => {
 };
 
 /**
- * Retrieves an inventory item by its ID.
- * @param {string} id - The ID of the inventory item to retrieve.
- * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ * Retrieves all inventory items.
+ * 
+ * @returns {Promise<IInventory[]>} - An array of retrieved inventory items.
  */
 export const getAllInventory = async () => {
     const result = await Inventory.find({}).lean();
@@ -137,9 +139,10 @@ export const getAllInventory = async () => {
 };
 
 /**
- * Retrieves an inventory item by its ID.
- * @param {string} id - The ID of the inventory item to retrieve.
- * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ * Retrieves all warehouses associated with a given product ID.
+ * 
+ * @param {string} productId - The ID of the product to retrieve warehouses for.
+ * @returns {Promise<Array<IWarehouse>>} - An array of retrieved warehouse objects.
  */
 export const getWarehousesById = async (productId :object) => {
     const stocks: [IStock] = await Stock.find({ product_id: productId }).lean();
@@ -163,9 +166,14 @@ export const getWarehousesById = async (productId :object) => {
 };
 
 /**
- * Retrieves an inventory item by its ID.
- * @param {string} id - The ID of the inventory item to retrieve.
- * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ * Sends an email to the admin user when a product's stock quantity goes below
+ * the low stock threshold.
+ *
+ * @param {IInventory} product - The product object with name and other details.
+ * @param {IStock} stock - The stock object with quantity and lowStockThreshold.
+ * @param {IWarehouse} warehouse - The warehouse object with name and location.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the email is sent.
  */
 export const sendEmailForLowStock = async (product :IInventory, stock :IStock, warehouse :IWarehouse) => {
     const mailOptions = {
@@ -191,9 +199,11 @@ export const sendEmailForLowStock = async (product :IInventory, stock :IStock, w
 }
 
 /**
- * Retrieves an inventory item by its ID.
- * @param {string} id - The ID of the inventory item to retrieve.
- * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ * Fetches products with a given time stamp range.
+ *
+ * @param {string} startDate - The start date for filtering data.
+ * @param {string} endDate - The end date for filtering data.
+ * @returns {Promise<Array<IInventory>>} - An array of retrieved product objects.
  */
 const fetchProductWithTimeStamp = async (startDate :string, endDate :string) => {
     // Validate and parse dates
@@ -212,9 +222,14 @@ const fetchProductWithTimeStamp = async (startDate :string, endDate :string) => 
 
 /**
  * Generates a CSV report of inventory data.
- * @param {string} startDate - The start date for filtering data.
- * @param {string} endDate - The end date for filtering data.
- * @returns {Promise<string>} - The generated CSV string.
+ * 
+ * @param {string} startDate - The start date for filtering inventory records.
+ * @param {string} endDate - The end date for filtering inventory records.
+ * @returns {Promise<string>} - A promise that resolves to the CSV string of inventory data.
+ * 
+ * The CSV report includes fields such as name, price, warehouse, location, quantity, 
+ * and lowStockThreshold. It fetches data from the database and joins stock, inventory, 
+ * and warehouse collections to create a comprehensive report.
  */
 export const csvReport = async (startDate :string, endDate: string) => {
     // let inventoryData :Array<Object> = [];
@@ -258,11 +273,16 @@ export const csvReport = async (startDate :string, endDate: string) => {
 };
 
 /**
- * Generates a PDF report of inventory data.
- * @param {Response} res - The Express response object for sending the PDF.
- * @param {string} startDate - The start date for filtering data.
- * @param {string} endDate - The end date for filtering data.
- * @returns {Promise<void>} - Resolves after generating the PDF.
+ * Generates a PDF report of inventory data and sends it as a response.
+ * 
+ * @param {Response} res - The response object used to send the PDF file.
+ * @param {string} startDate - The start date for filtering inventory records.
+ * @param {string} endDate - The end date for filtering inventory records.
+ * 
+ * This function creates a PDF document that includes an inventory report, 
+ * with fields such as name and price. It fetches data from the database, 
+ * optionally filtering by the provided date range. The PDF is then sent 
+ * as a response to the client.
  */
 export const pdfReport = async (res: Response, startDate :string, endDate :string) => {
     const doc = new PDFDocument();

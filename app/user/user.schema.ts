@@ -19,9 +19,9 @@ const UserSchema = new Schema<IUser>({
 }, { timestamps: true });
 
 UserSchema.pre("save", async function (next) {
-        // if (this.password) {
-        //         this.password = await hashPassword(this.password);
-        // }
+        if (this.password) {
+                this.password = await hashPassword(this.password);
+        }
         next();
 });
 

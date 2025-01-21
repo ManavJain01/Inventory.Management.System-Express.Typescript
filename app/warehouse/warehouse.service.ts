@@ -3,9 +3,9 @@ import { type IWarehouse } from "./warehouse.dto";
 import { Warehouse } from "./warehouse.schema";
 
 /**
- * Creates a new warehouse and saves it to the database.
- * @param {IWarehouse} data - The warehouse data to be created.
- * @returns {Promise<{ inventory: Warehouse }>} - The created warehouse data.
+ * Creates a new warehouse.
+ * @param {IWarehouse} data - The warehouse data to create.
+ * @returns {Promise<{ inventory: IWarehouse }>} - The created warehouse object.
  */
 export const createWarehouse = async (data: IWarehouse) => {
     const result = await Warehouse.create({ ...data });
@@ -16,10 +16,10 @@ export const createWarehouse = async (data: IWarehouse) => {
 };
 
 /**
- * Updates an existing warehouse by its ID with the provided data.
- * @param {string} id - The ID of the warehouse to be updated.
- * @param {IWarehouse} data - The new data to update the warehouse.
- * @returns {Promise<Warehouse>} - The updated warehouse data.
+ * Updates an existing warehouse by its ID.
+ * @param {string} id - The ID of the warehouse to update.
+ * @param {IWarehouse} data - The new warehouse data.
+ * @returns {Promise<IWarehouse | null>} - The updated warehouse object, or null if not found.
  */
 export const updateWarehouse = async (id: string, data: IWarehouse) => {
     const result = await Warehouse.findOneAndUpdate({ _id: id }, data, {
@@ -29,16 +29,16 @@ export const updateWarehouse = async (id: string, data: IWarehouse) => {
 };
 
 /**
- * Edits an existing warehouse by its ID with the provided partial data.
- * @param {string} id - The ID of the warehouse to be edited.
- * @param {Partial<IWarehouse>} data - The partial data to update the warehouse.
- * @throws {Error} - Throws an error if the warehouse is not found.
- * @returns {Promise<Warehouse>} - The updated warehouse data.
+ * Partially updates an existing warehouse by its ID.
+ * @param {string} id - The ID of the warehouse to update.
+ * @param {Partial<IWarehouse>} data - The partial data to update.
+ * @returns {Promise<IWarehouse>} - The updated warehouse object.
+ * @throws {Error} - If the warehouse is not found.
  */
 export const editWarehouse = async (id: string, data: Partial<IWarehouse>) => {
     const result = await Warehouse.findOneAndUpdate({ _id: id }, data);
 
-    if(!result){
+    if (!result) {
         throw new Error("Warehouse not found");
     }
 
@@ -47,8 +47,8 @@ export const editWarehouse = async (id: string, data: Partial<IWarehouse>) => {
 
 /**
  * Deletes a warehouse by its ID.
- * @param {string} id - The ID of the warehouse to be deleted.
- * @returns {Promise<any>} - The result of the delete operation.
+ * @param {string} id - The ID of the warehouse to delete.
+ * @returns {Promise<{ deletedCount?: number }>} - The result of the deletion operation.
  */
 export const deleteWarehouse = async (id: string) => {
     const result = await Warehouse.deleteOne({ _id: id });
@@ -58,7 +58,7 @@ export const deleteWarehouse = async (id: string) => {
 /**
  * Retrieves a warehouse by its ID.
  * @param {string} id - The ID of the warehouse to retrieve.
- * @returns {Promise<Warehouse | null>} - The warehouse data or null if not found.
+ * @returns {Promise<IWarehouse | null>} - The found warehouse object, or null if not found.
  */
 export const getWarehouseById = async (id: string) => {
     const result = await Warehouse.findById(id).lean();
@@ -67,7 +67,7 @@ export const getWarehouseById = async (id: string) => {
 
 /**
  * Retrieves all warehouses.
- * @returns {Promise<Warehouse[]>} - A list of all warehouses.
+ * @returns {Promise<IWarehouse[]>} - An array of all warehouse objects.
  */
 export const getAllWarehouse = async () => {
     const result = await Warehouse.find({}).lean();

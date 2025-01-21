@@ -10,10 +10,9 @@ router.get("/report-csv", inventoryController.csvReport);
 router.get("/report-pdf", inventoryController.pdfReport);
 router.get("/:id", inventoryController.getInventoryById);
 router.get("/allwarehouses/:id", inventoryController.getWarehousesById);
-router.post("/", inventoryController.createInventory);
-router.patch("/:id", inventoryController.editInventory);
-router.put("/:id", inventoryController.updateInventory);
-// router.put("/", inventoryValidator.updateInventory, catchError, inventoryController.updateInventory);
+router.post("/", inventoryValidator.createInventory, catchError, inventoryController.createInventory);
+router.patch("/:id", inventoryValidator.editInventory, catchError, inventoryController.editInventory);
+router.put("/:id", inventoryValidator.updateInventory, catchError, inventoryController.updateInventory);
 router.delete("/:id", inventoryController.deleteInventory);
 
 
