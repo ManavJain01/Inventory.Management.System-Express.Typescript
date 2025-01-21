@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { catchError } from "../../common/middleware/cath-error.middleware";
+import { catchError } from "../common/middleware/cath-error.middleware";
 import * as warehouseController from "./warehouse.controller";
 import * as warehouseValidator from "./warehouse.validation";
 

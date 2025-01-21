@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { catchError } from "../../common/middleware/cath-error.middleware";
+import { catchError } from "../common/middleware/cath-error.middleware";
 import * as inventoryController from "./inventory.controller";
 import * as inventoryValidator from "./inventory.validation";
 

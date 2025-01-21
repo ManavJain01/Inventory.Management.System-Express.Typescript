@@ -1,4 +1,4 @@
-import { sendEmail } from "../../common/services/email.service";
+import { sendEmail } from "../common/services/email.service";
 import { type IInventory } from './inventory.dto';
 import { Inventory } from "./inventory.schema";
 import { Parser } from 'json2csv';
@@ -8,10 +8,16 @@ import { type Response } from 'express'
 import mongoose from "mongoose";
 import { Stock } from "../stock level/stock.schema";
 import { IStock } from "../stock level/stock.dto";
-import { IProduct } from "../../common/dto/product.dto";
+import { IProduct } from "../common/dto/product.dto";
 import { Warehouse } from "../warehouse/warehouse.schema";
 import { IWarehouse } from "../warehouse/warehouse.dto";
 
+/**
+ * Creates a new inventory item and its corresponding stock entry.
+ * @param {IProduct} data - The product data containing name, price, warehouse_id, quantity, and lowStockThreshold.
+ * @returns {Promise<{inventory: IInventory, stock: IStock}>} - The created inventory and stock entry.
+ * @throws {Error} - If any required parameter is missing.
+ */
 export const createInventory = async (data: IProduct) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
 
@@ -28,6 +34,13 @@ export const createInventory = async (data: IProduct) => {
     return { inventory: product, stock };
 };
 
+/**
+ * Updates an inventory item and optionally its corresponding stock entry.
+ * @param {string} id - The ID of the inventory item to update.
+ * @param {IProduct} data - The updated product data.
+ * @returns {Promise<IInventory>} - The updated inventory item.
+ * @throws {Error} - If required fields are missing or the product is not found.
+ */
 export const updateInventory = async (id: string, data: IProduct) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
 
@@ -60,6 +73,13 @@ export const updateInventory = async (id: string, data: IProduct) => {
     return product;
 };
 
+/**
+ * Partially updates an inventory item and optionally its corresponding stock entry.
+ * @param {string} id - The ID of the inventory item to update.
+ * @param {Partial<IProduct>} data - The partial product data for updating.
+ * @returns {Promise<IInventory>} - The updated inventory item.
+ * @throws {Error} - If the product is not found or required fields are missing.
+ */
 export const editInventory = async (id: string, data: Partial<IProduct>) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
 
@@ -86,21 +106,41 @@ export const editInventory = async (id: string, data: Partial<IProduct>) => {
     return product;
 };
 
+/**
+ * Deletes an inventory item by ID.
+ * @param {string} id - The ID of the inventory item to delete.
+ * @returns {Promise<Object>} - The result of the deletion operation.
+ */
 export const deleteInventory = async (id: string) => {
     const result = await Inventory.deleteOne({ _id: id });
     return result;
 };
 
+/**
+ * Retrieves an inventory item by its ID.
+ * @param {string} id - The ID of the inventory item to retrieve.
+ * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ */
 export const getInventoryById = async (id: string) => {
     const result = await Inventory.findById(id).lean();
     return result;
 };
 
+/**
+ * Retrieves an inventory item by its ID.
+ * @param {string} id - The ID of the inventory item to retrieve.
+ * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ */
 export const getAllInventory = async () => {
     const result = await Inventory.find({}).lean();
     return result;
 };
 
+/**
+ * Retrieves an inventory item by its ID.
+ * @param {string} id - The ID of the inventory item to retrieve.
+ * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ */
 export const getWarehousesById = async (productId :object) => {
     const stocks: [IStock] = await Stock.find({ product_id: productId }).lean();
 
@@ -122,6 +162,11 @@ export const getWarehousesById = async (productId :object) => {
     return warehouses;
 };
 
+/**
+ * Retrieves an inventory item by its ID.
+ * @param {string} id - The ID of the inventory item to retrieve.
+ * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ */
 export const sendEmailForLowStock = async (product :IInventory, stock :IStock, warehouse :IWarehouse) => {
     const mailOptions = {
         from: process.env.MAIL_USER!, // Replace with your sender email
@@ -145,6 +190,11 @@ export const sendEmailForLowStock = async (product :IInventory, stock :IStock, w
     await sendEmail(mailOptions);
 }
 
+/**
+ * Retrieves an inventory item by its ID.
+ * @param {string} id - The ID of the inventory item to retrieve.
+ * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ */
 const fetchProductWithTimeStamp = async (startDate :string, endDate :string) => {
     // Validate and parse dates
     const start = startDate ? new Date(startDate as string) : null;
@@ -160,6 +210,12 @@ const fetchProductWithTimeStamp = async (startDate :string, endDate :string) => 
     return await Inventory.find(filter).lean();
 }
 
+/**
+ * Generates a CSV report of inventory data.
+ * @param {string} startDate - The start date for filtering data.
+ * @param {string} endDate - The end date for filtering data.
+ * @returns {Promise<string>} - The generated CSV string.
+ */
 export const csvReport = async (startDate :string, endDate: string) => {
     // let inventoryData :Array<Object> = [];
 
@@ -201,6 +257,13 @@ export const csvReport = async (startDate :string, endDate: string) => {
     return csv
 };
 
+/**
+ * Generates a PDF report of inventory data.
+ * @param {Response} res - The Express response object for sending the PDF.
+ * @param {string} startDate - The start date for filtering data.
+ * @param {string} endDate - The end date for filtering data.
+ * @returns {Promise<void>} - Resolves after generating the PDF.
+ */
 export const pdfReport = async (res: Response, startDate :string, endDate :string) => {
     const doc = new PDFDocument();
     const fileName = 'inventory-report.pdf';
