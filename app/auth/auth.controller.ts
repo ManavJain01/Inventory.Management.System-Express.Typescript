@@ -9,6 +9,13 @@ import { decodeAccessToken } from "../common/helper/jwt.helper";
 import { IUser } from "../user/user.dto";
 
 /**
+ * @file auth.controller.ts
+ * @author Adebayo Ademola <https://github.com/adebayo>
+ * @since 0.0.1
+ * @description auth controller
+ */
+
+/**
  * @function loginUser
  * @description Logs in a user by validating their credentials and generating tokens.
  * @param {Request} req - The request object.
@@ -78,13 +85,13 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
  * @returns {Promise<void>} - A promise that resolves if the password is reset successfully.
  */
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
-    const { token } = req.params;  // Get token from URL params
-    const { newPassword } = req.body;  // Get the new password from request body  
+    const token = req.headers.authorization?.replace("Bearer ", "") || req.cookies?.accessToken;
+    const { password } = req.body;  // Get the new password from request body  
   
     // Verify the token
     const decodedUser = await decodeAccessToken(token) as IUser;
 
-    await authService.resetPassword(decodedUser, newPassword);
+    await authService.resetPassword(decodedUser, password);
 
     res.send(createResponse("Password successfully reset" ));
 });

@@ -1,9 +1,16 @@
 {
-    "source": {
-      "include": ["app"],
-      "exclude": ["node_modules"]
-    },
-    "opts": {
-      "destination": "docs"
-    }
-  }  
+  "source": {
+    "include": ["app"],
+    "includePattern": ".ts$",
+    "exclusePattern": "(node_modules/|docs)"
+  },
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true
+  },
+  "opts": {
+    "recurse": true,
+    "destination": "./docs/"
+  }
+}

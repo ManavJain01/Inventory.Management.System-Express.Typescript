@@ -5,6 +5,13 @@ import asyncHandler from "express-async-handler";
 import { type Request, type Response } from 'express'
 
 /**
+ * @file warehouse.controller.ts
+ * @author Adebayo Ademola <https://github.com/adebayo>
+ * @since 0.0.1
+ * @description warehouse controller
+ */
+
+/**
  * Creates a new warehouse.
  * @param {Request} req - The request object containing warehouse data in the body.
  * @param {Response} res - The response object to send the result of the creation.

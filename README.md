@@ -59,7 +59,7 @@ The Inventory Management System is a full-stack application designed to streamli
 }
 ```
 
-### Product Schema
+### Inventory Schema
 
 ```javascript
 {
@@ -68,7 +68,7 @@ The Inventory Management System is a full-stack application designed to streamli
 }
 ```
 
-### Inventory (Stock) Schema
+### Stock Schema
 
 ```javascript
 {
@@ -115,12 +115,18 @@ Ensure you have the following installed:
    ```env
    PORT=5000
    MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_secret_key
+   MAIL_USER = "johndoe@example.com"
+   MAIL_PASS = "password123"
+   FE_BASE_URL = "http://localhost:3000"
+   REFRESH_TOKEN = "refreshtoken";
+   ACCESS_TOKEN = "accesstoken"
    ```
 
 5. Start the server:
    ```bash
-   npm start
+   npm run local
+   npm run dev
+   npm run prod
    ```
 
 ---
@@ -129,21 +135,23 @@ Ensure you have the following installed:
 
 ### Authentication
 
-- **POST** `/auth/signup` - Register a new user.
+- **POST** `/users/` - Register a new user.
 - **POST** `/auth/login` - Login to the system.
+- **POST** `/auth/logout` - Logout from the system.
+- **POST** `/auth/forgot-password` - Email the User to reset password.
+- **POST** `/auth/reset-password` - Reset the Password.
+- **POST** `/auth/refresh-token` - regenerate access token
 
 ### Admin
 
-- **POST** `/warehouses` - Create a new warehouse.
-- **GET** `/warehouses` - List all warehouses.
-- **GET** `/warehouses/:id` - View a specific warehouse.
+- **POST** `/warehouse` - Create a new warehouse.
+- **GET** `/warehouse` - List all warehouses.
+- **GET** `/warehouse/:id` - View a specific warehouse.
 
 ### Manager
 
-- **POST** `/products` - Create a new product.
-- **GET** `/products` - List all products.
-- **POST** `/inventory` - Add product to inventory.
-- **GET** `/inventory` - View inventory details.
+- **POST** `/inventory` - Create a new product.
+- **GET** `/inventory` - List all products.
 
 ---
 
@@ -151,8 +159,7 @@ Ensure you have the following installed:
 
 - **Backend**: Node.js, Express
 - **Database**: MongoDB
-- **Authentication**: JSON Web Tokens (JWT)
-- **Frontend**: React (if applicable)
+- **Authentication**: JSON Web Tokens (JWT), Nodemailer
 
 ---
 
