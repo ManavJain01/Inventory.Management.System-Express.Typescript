@@ -8,7 +8,7 @@
     "prod": "pnpm run build && NODE_ENV=production node ./dist/index.js",
     "build": "npx tsc",
     "docs": "npx jsdoc",
-    "swagger-autogen": "node ./swagger/swagger.js",
+    "swagger-autogen": "ts-node ./swagger/swagger.ts",
     "lint": "eslint . --ext .ts,.js --max-warnings=0",
     "lint:fix": "eslint --fix --ext .js,.ts .",
     "format": "prettier . -w",
