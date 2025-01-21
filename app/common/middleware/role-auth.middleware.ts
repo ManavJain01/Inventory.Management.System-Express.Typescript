@@ -1,7 +1,7 @@
 import { type NextFunction, type Request, type Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import createHttpError from "http-errors";
-import { type IUser } from "../../user/user.dto";
+import { userEnum, type IUser } from "../../user/user.dto";
 import { decodeAccessToken } from "../helper/jwt.helper";
 
 // Middleware for role-based authentication
@@ -23,7 +23,7 @@ expressAsyncHandler(
     const decodedUser = await decodeAccessToken(token) as IUser;
 
     // Check if user has a valid role
-    if (!decodedUser.role || !['ADMIN', 'USER'].includes(decodedUser.role)) {
+    if (!decodedUser.role || !userEnum.includes(decodedUser.role)) {
       throw createHttpError(403, {
         message: "Invalid or unauthorized user role",
       });

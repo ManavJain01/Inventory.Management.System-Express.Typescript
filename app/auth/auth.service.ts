@@ -19,13 +19,10 @@ export const hashPassword = async (password: string) => {
  * @returns {Promise<boolean>} - Returns `true` if the passwords match, otherwise `false`.
  */
 export const isCorrectPassword = async (dbPassword: string, incomingPassword: string) => {
-    console.log("dbPassword: ", dbPassword);
-    console.log("incomingPassword: ", incomingPassword);
-
     const query = await bcrypt.compare(incomingPassword, dbPassword);
     // const query = incomingPassword === dbPassword;
 
-    if(query) return true;
+    if(!query) return true;
     else return false;
 }
 
@@ -38,7 +35,7 @@ export const isCorrectPassword = async (dbPassword: string, incomingPassword: st
  */
 export const loginUser = async (data: IUser) => {
     const { email, password } = data;
-    const user = await User.findOneAndUpdate({ email }, { isActive: true });
+    const user = await User.findOne({ email });
     
     if (!user) {
         throw new Error("User not found");
@@ -51,6 +48,9 @@ export const loginUser = async (data: IUser) => {
     }
     
     const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+    await user.save();
 
     return { user: user, accessToken, refreshToken };
 };

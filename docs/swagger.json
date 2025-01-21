@@ -22,45 +22,88 @@
     "application/json"
   ],
   "paths": {
-    "/admin/": {
-      "post": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/admin/login": {
-      "post": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/": {
+    "/api/users/": {
       "get": {
-        "description": "",
+        "description": "Retrieve a list of users. Requires a bearer token for authentication.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Bearer <token>"
+            },
+            "description": "Bearer token for authentication"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "A list of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": "string" },
+                      "email": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
       "post": {
-        "description": "",
+        "description": "Create a new user.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "password": { "type": "string" },
+                  "email": { "type": "string" },
+                  "role": { "type": "string" }
+                },
+                "required": ["name", "password", "email", "role"]
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "email": { "type": "string" },
+                    "role": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
           }
         }
       }
     },
-    "/users/{id}": {
+    "/api/users/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -126,34 +169,7 @@
         }
       }
     },
-    "/users/login": {
-      "post": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/users/logout": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/inventory/": {
+    "/api/inventory/": {
       "get": {
         "description": "",
         "responses": {
@@ -171,7 +187,7 @@
         }
       }
     },
-    "/inventory/report-csv": {
+    "/api/inventory/report-csv": {
       "get": {
         "description": "",
         "parameters": [
@@ -193,7 +209,7 @@
         }
       }
     },
-    "/inventory/report-pdf": {
+    "/api/inventory/report-pdf": {
       "get": {
         "description": "",
         "parameters": [
@@ -215,7 +231,7 @@
         }
       }
     },
-    "/inventory/{id}": {
+    "/api/inventory/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -281,7 +297,7 @@
         }
       }
     },
-    "/inventory/allwarehouses/{id}": {
+    "/api/inventory/allwarehouses/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -299,7 +315,7 @@
         }
       }
     },
-    "/warehouse/": {
+    "/api/warehouse/": {
       "get": {
         "description": "",
         "responses": {
@@ -317,7 +333,7 @@
         }
       }
     },
-    "/warehouse/{id}": {
+    "/api/warehouse/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -373,6 +389,33 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/logout": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
             "type": "string"
           }
         ],
