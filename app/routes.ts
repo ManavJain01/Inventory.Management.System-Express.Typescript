@@ -16,9 +16,9 @@ const router = express.Router();
 
 router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJsonFile));
 router.use("/users", userRoutes);
-router.use("/inventory", roleAuthMiddleware(["ADMIN", "MANAGER"]), inventoryRoutes);
-router.use("/warehouse", roleAuthMiddleware(["ADMIN"]), warehouseRoutes);
-router.use("/stock", roleAuthMiddleware(["ADMIN", "MANAGER"]), stockRoutes);
+// router.use("/inventory", roleAuthMiddleware(["ADMIN", "MANAGER"]), inventoryRoutes);
+// router.use("/warehouse", roleAuthMiddleware(["ADMIN"]), warehouseRoutes);
+// router.use("/stock", roleAuthMiddleware(["ADMIN", "MANAGER"]), stockRoutes);
 router.use("/", authRoutes);
 
 export default router;

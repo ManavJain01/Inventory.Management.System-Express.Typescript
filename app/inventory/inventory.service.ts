@@ -1,72 +1,86 @@
 import { sendEmail } from "../common/services/email.service";
 import { type IInventory } from './inventory.dto';
-import { Inventory } from "./inventory.schema";
+import { Inventory } from "./inventory.entity";
 import { Parser } from 'json2csv';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import { type Response } from 'express'
 import mongoose from "mongoose";
-import { Stock } from "../stock level/stock.schema";
+import { Stock } from "../stock level/stock.entity";
 import { IStock } from "../stock level/stock.dto";
-import { IProduct } from "../common/dto/product.dto";
-import { Warehouse } from "../warehouse/warehouse.schema";
+import { IProduct } from "../common/entity/product.entity";
+import { Warehouse } from "../warehouse/warehouse.entity";
 import { IWarehouse } from "../warehouse/warehouse.dto";
+import { Repository } from "typeorm";
+import { AppDataSource } from "../common/services/data-source";
+
+const inventoryRepository: Repository<Inventory> = AppDataSource.getRepository(Inventory);
+const stockRepository: Repository<Stock> = AppDataSource.getRepository(Stock);
+const warehouseRepository: Repository<Warehouse> = AppDataSource.getRepository(Warehouse);
 
 /**
- * Creates a new inventory item and an associated stock entry.
- * @param {IProduct} data - The product data to be created.
- * @returns {Promise<{inventory: IInventory, stock: IStock}>} - The created inventory item and its associated stock entry.
- * @throws {Error} - If required fields are missing.
+ * Creates a new inventory item along with stock.
+ * @param {IProduct} data - The product data containing name, price, warehouse_id, quantity, and lowStockThreshold.
+ * @returns {Promise<{inventory: Inventory, stock: Stock}>} - The created inventory and stock.
+ * @throws {Error} - If required parameters are missing.
  */
 export const createInventory = async (data: IProduct) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
 
-    if(!name || !price || !warehouse_id || !quantity || !lowStockThreshold){
+    if (!name || !price || !warehouse_id || !quantity || !lowStockThreshold) {
         throw new Error("Parameters Missing");
     }
 
-    const product = await Inventory.create({ name, price });
+    const product = inventoryRepository.create({ name, price });
+    await inventoryRepository.save(product);
 
-    await product.save();
-
-    const stock = await Stock.create({ product_id: product._id, warehouse_id: warehouse_id, quantity: quantity, lowStockThreshold: lowStockThreshold })
+    const stock = stockRepository.create({
+        product_id: product.id,
+        warehouse_id: warehouse_id,
+        quantity: quantity,
+        lowStockThreshold: lowStockThreshold
+    });
+    await stockRepository.save(stock);
 
     return { inventory: product, stock };
 };
 
 /**
- * Updates an inventory item and optionally its corresponding stock entry.
- * @param {string} id - The ID of the inventory item to update.
- * @param {IProduct} data - The product data for updating.
- * @returns {Promise<IInventory>} - The updated inventory item.
- * @throws {Error} - If the product is not found or required fields are missing.
+ * Updates an existing inventory item and its stock if needed.
+ * @param {number} id - The ID of the inventory to update.
+ * @param {IProduct} data - The updated product data.
+ * @returns {Promise<Inventory>} - The updated inventory.
+ * @throws {Error} - If inventory fields are missing or if the product or stock is not found.
  */
-export const updateInventory = async (id: string, data: IProduct) => {
+export const updateInventory = async (id: number, data: IProduct) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
 
-    if(!name || !price){
+    if (!name || !price) {
         throw new Error("Inventory fields Missing");
     }
 
-    const product = await Inventory.findOneAndUpdate({ _id: id }, { name, price }, {
-        new: true,
-    });
-
-    if(!product){
+    let product = await inventoryRepository.findOneBy({ id });
+    if (!product) {
         throw new Error("Product not found");
     }
 
-    if(( quantity || lowStockThreshold ) && !warehouse_id){
+    product = await inventoryRepository.save({ ...product, name, price });
+
+    if ((quantity || lowStockThreshold) && !warehouse_id) {
         throw new Error("warehouse_id missing");
-    } else if(warehouse_id && ( quantity || lowStockThreshold )){
-        const stockData = { quantity, lowStockThreshold }
-        const stock = await Stock.findOneAndUpdate({ "product_id" : id, "warehouse_id" : warehouse_id }, stockData);
-        
-        if(!stock) throw new Error("Stock Not Found");
-        
-        if(stock.quantity <= stock.lowStockThreshold){
-            const warehouse = await Warehouse.findById(warehouse_id);
-            await sendEmailForLowStock(product as IInventory, stock as IStock, warehouse as IWarehouse);
+    } else if (warehouse_id && (quantity || lowStockThreshold)) {
+        const stock = await stockRepository.findOne({ where: { product_id: id, warehouse_id } });
+        if (!stock) {
+            throw new Error("Stock Not Found");
+        }
+
+        stock.quantity = quantity;
+        stock.lowStockThreshold = lowStockThreshold;
+        await stockRepository.save(stock);
+
+        if (stock.quantity <= stock.lowStockThreshold) {
+            const warehouse = await warehouseRepository.findOneBy({ id: warehouse_id });
+            await sendEmailForLowStock(product, stock, warehouse as IWarehouse);
         }
     }
 
@@ -74,91 +88,108 @@ export const updateInventory = async (id: string, data: IProduct) => {
 };
 
 /**
- * Partially updates an existing inventory item by its ID.
- * 
- * @param {string} id - The ID of the inventory item to update.
- * @param {Partial<IProduct>} data - The partial product data to update. Only the fields provided will be updated.
- * @throws {Error} - If the product is not found, or if warehouse_id is missing when updating quantity or lowStockThreshold.
- * @returns {Promise<IInventory>} - The updated inventory item.
+ * Partially updates an existing inventory item and its stock if needed.
+ * @param {number} id - The ID of the inventory to update.
+ * @param {Partial<IProduct>} data - The partial product data to update.
+ * @returns {Promise<UpdateResult>} - The result of the product update operation.
+ * @throws {Error} - If the product or stock is not found or warehouse_id is missing when required.
  */
-export const editInventory = async (id: string, data: Partial<IProduct>) => {
+export const editInventory = async (id: number, data: Partial<IProduct>) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
 
-    const product = await Inventory.findOneAndUpdate({ _id: id }, { name, price });
+    const productUpdateResult = await inventoryRepository.update({ id: id }, { name, price });
 
-    if(!product){
+    if (productUpdateResult.affected === 0) {
         throw new Error("Product not found");
     }
 
-    if(( quantity || lowStockThreshold ) && !warehouse_id){
+    if ((quantity || lowStockThreshold) && !warehouse_id) {
         throw new Error("warehouse_id missing");
-    } else if(warehouse_id && ( quantity || lowStockThreshold )){
-        const stockData = { quantity, lowStockThreshold }
-        const stock = await Stock.findOneAndUpdate({ "product_id" : id, "warehouse_id" : warehouse_id }, stockData);
-        
-        if(!stock) throw new Error("Stock Not Found");
-        
-        if(stock.quantity <= stock.lowStockThreshold){
-            const warehouse = await Warehouse.findById(warehouse_id);
+    }
+
+    if (warehouse_id && (quantity || lowStockThreshold)) {
+        const stockData = { quantity, lowStockThreshold };
+
+        const stockUpdateResult = await stockRepository.update(
+            { "product_id": id, "warehouse_id": warehouse_id },
+            stockData
+        );
+
+        if (stockUpdateResult.affected === 0) {
+            throw new Error("Stock Not Found");
+        }
+
+        const stock = await stockRepository.findOne({ where: { "product_id": id, "warehouse_id": warehouse_id } });
+
+        if (stock && stock.quantity <= stock.lowStockThreshold) {
+            const warehouse = await warehouseRepository.findOne({ where: { id: warehouse_id } });
+
+            if (!warehouse) {
+                throw new Error("Warehouse not found");
+            }
+
+            const product = await inventoryRepository.findOne({ where: { id } });
+
             await sendEmailForLowStock(product as IInventory, stock as IStock, warehouse as IWarehouse);
         }
     }
 
-    return product;
+    return productUpdateResult;
 };
 
 /**
- * Deletes an existing inventory item by its ID.
- * 
- * @param {string} id - The ID of the inventory item to delete.
- * @returns {Promise<DeleteResult>} - The result of the deletion.
+ * Deletes an inventory item by its ID.
+ * @param {number} id - The ID of the inventory to delete.
+ * @returns {Promise<DeleteResult>} - The result of the delete operation.
  */
-export const deleteInventory = async (id: string) => {
-    const result = await Inventory.deleteOne({ _id: id });
+export const deleteInventory = async (id: number) => {
+    const inventoryRepository: Repository<Inventory> = AppDataSource.getRepository(Inventory);
+    const result = await inventoryRepository.delete(id);
     return result;
 };
 
 /**
  * Retrieves an inventory item by its ID.
- * @param {string} id - The ID of the inventory item to retrieve.
- * @returns {Promise<IInventory | null>} - The retrieved inventory item or null if not found.
+ * @param {number} id - The ID of the inventory to retrieve.
+ * @returns {Promise<Inventory | null>} - The retrieved inventory or null if not found.
  */
-export const getInventoryById = async (id: string) => {
-    const result = await Inventory.findById(id).lean();
+export const getInventoryById = async (id: number) => {
+    const inventoryRepository: Repository<Inventory> = AppDataSource.getRepository(Inventory);
+    const result = await inventoryRepository.findOneBy({ id });
     return result;
 };
 
 /**
  * Retrieves all inventory items.
- * 
- * @returns {Promise<IInventory[]>} - An array of retrieved inventory items.
+ * @returns {Promise<Inventory[]>} - All inventory items.
  */
 export const getAllInventory = async () => {
-    const result = await Inventory.find({}).lean();
+    const inventoryRepository: Repository<Inventory> = AppDataSource.getRepository(Inventory);
+    const result = await inventoryRepository.find();
     return result;
 };
 
 /**
  * Retrieves all warehouses associated with a given product ID.
- * 
- * @param {string} productId - The ID of the product to retrieve warehouses for.
- * @returns {Promise<Array<IWarehouse>>} - An array of retrieved warehouse objects.
+ * @param {number} productId - The ID of the product.
+ * @returns {Promise<Warehouse[]>} - All warehouses associated with the product.
+ * @throws {Error} - If no stock is found for the product.
  */
-export const getWarehousesById = async (productId :object) => {
-    const stocks: [IStock] = await Stock.find({ product_id: productId }).lean();
+export const getWarehousesById = async (productId: number) => {
+    const stockRepository: Repository<Stock> = AppDataSource.getRepository(Stock);
+    const warehouseRepository: Repository<Warehouse> = AppDataSource.getRepository(Warehouse);
 
-    if (!stocks) {
+    const stocks = await stockRepository.find({ where: { product_id: productId } });
+
+    if (!stocks || stocks.length === 0) {
         throw new Error("No Stock Found!!!");
     }
 
-    const warehouses: Array<Object> = [];
-
-    // Use for...of loop for async/await to work properly
+    const warehouses = [];
     for (const stock of stocks) {
-        const warehouse = await Warehouse.find({ _id: stock.warehouse_id }); // Find by warehouse_id
-        
-        if (warehouse.length > 0) {
-            warehouses.push(warehouse[0]);
+        const warehouse = await warehouseRepository.findOneBy({ id: stock.warehouse_id });
+        if (warehouse) {
+            warehouses.push(warehouse);
         }
     }
 
@@ -166,18 +197,15 @@ export const getWarehousesById = async (productId :object) => {
 };
 
 /**
- * Sends an email to the admin user when a product's stock quantity goes below
- * the low stock threshold.
- *
- * @param {IInventory} product - The product object with name and other details.
- * @param {IStock} stock - The stock object with quantity and lowStockThreshold.
- * @param {IWarehouse} warehouse - The warehouse object with name and location.
- *
+ * Sends an email alert for low stock of a product in a warehouse.
+ * @param {IInventory} product - The product with low stock.
+ * @param {IStock} stock - The stock details.
+ * @param {IWarehouse} warehouse - The warehouse where the stock is low.
  * @returns {Promise<void>} - A promise that resolves when the email is sent.
  */
 export const sendEmailForLowStock = async (product :IInventory, stock :IStock, warehouse :IWarehouse) => {
     const mailOptions = {
-        from: process.env.MAIL_USER!, // Replace with your sender email
+        from: process.env.MAIL_USER!,
         to: "rocker17manav@gmail.com",
         subject: `Low Stock Alert: ${product.name}`,
         html: `
@@ -199,62 +227,58 @@ export const sendEmailForLowStock = async (product :IInventory, stock :IStock, w
 }
 
 /**
- * Fetches products with a given time stamp range.
- *
- * @param {string} startDate - The start date for filtering data.
- * @param {string} endDate - The end date for filtering data.
- * @returns {Promise<Array<IInventory>>} - An array of retrieved product objects.
+ * Fetches products created within a specific date range.
+ * @param {string} startDate - The start date of the range.
+ * @param {string} endDate - The end date of the range.
+ * @returns {Promise<IInventory[]>} - Products created within the date range.
+ * @throws {Error} - If the date range is invalid.
  */
-const fetchProductWithTimeStamp = async (startDate :string, endDate :string) => {
-    // Validate and parse dates
-    const start = startDate ? new Date(startDate as string) : null;
-    const end = endDate ? new Date(endDate as string) : null;
-    
-    // Create filter conditions
+const fetchProductWithTimeStamp = async (startDate: string, endDate: string) => {
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+
+    if (start && isNaN(start.getTime())) {
+        throw new Error("Invalid start date");
+    }
+    if (end && isNaN(end.getTime())) {
+        throw new Error("Invalid end date");
+    }
+
     const filter: mongoose.FilterQuery<typeof Inventory> = {};
-    if (start) filter.createdAt = { $gte: start };
 
-    if (end) filter.createdAt = { ...filter.createdAt, $lte: end };
+    if (start) {
+        filter.createdAt = { $gte: start };
+    }
 
-    // Fetch data with filtering
-    return await Inventory.find(filter).lean();
-}
+    if (end) {
+        if (filter.createdAt) {
+            filter.createdAt.$lte = end;
+        } else {
+            filter.createdAt = { $lte: end };
+        }
+    }
+
+    return [];
+};
 
 /**
  * Generates a CSV report of inventory data.
- * 
- * @param {string} startDate - The start date for filtering inventory records.
- * @param {string} endDate - The end date for filtering inventory records.
- * @returns {Promise<string>} - A promise that resolves to the CSV string of inventory data.
- * 
- * The CSV report includes fields such as name, price, warehouse, location, quantity, 
- * and lowStockThreshold. It fetches data from the database and joins stock, inventory, 
- * and warehouse collections to create a comprehensive report.
+ * @param {string} startDate - The start date for filtering inventory.
+ * @param {string} endDate - The end date for filtering inventory.
+ * @returns {Promise<string>} - The generated CSV content.
  */
-export const csvReport = async (startDate :string, endDate: string) => {
-    // let inventoryData :Array<Object> = [];
+export const csvReport = async (startDate: string, endDate: string) => {
+    const stockRepository: Repository<Stock> = AppDataSource.getRepository(Stock);
+    const inventoryRepository: Repository<Inventory> = AppDataSource.getRepository(Inventory);
+    const warehouseRepository: Repository<Warehouse> = AppDataSource.getRepository(Warehouse);
 
-    // if(startDate && endDate){
-    //     inventoryData = await fetchProductWithTimeStamp(startDate, endDate);     
-    // } else {
-    //     inventoryData = await getAllInventory();
-    // }
-    
-    // const fields = ['name', 'price', 'warehouse', 'lowStockThreshold']; // Fields for CSV
-    // const parser = new Parser({ fields });
-    // return parser.parse(inventoryData);
+    const stock = await stockRepository.find();
+    const inventory = await inventoryRepository.find();
+    const warehouses = await warehouseRepository.find();
 
-    const fields = ['name', 'price', 'warehouse', 'location', 'quantity', 'lowStockThreshold'];
-
-    // Fetch data from the database
-    const stock: IStock[] = await Stock.find({}).lean();
-    const inventory: IInventory[] = await Inventory.find({}).lean();
-    const warehouses: IWarehouse[] = await Warehouse.find({}).lean();
-
-    // Flatten data by joining inventory, warehouse, and stock
     const flattenedData = stock.map((stockEntry) => {
-        const product = inventory.find((item) => item._id.toString() === stockEntry.product_id.toString());
-        const warehouse = warehouses.find((wh) => wh._id.toString() === stockEntry.warehouse_id.toString());
+        const product = inventory.find(item => item.id === stockEntry.product_id);
+        const warehouse = warehouses.find(wh => wh.id === stockEntry.warehouse_id);
 
         return {
             name: product?.name || 'Unknown',
@@ -266,25 +290,20 @@ export const csvReport = async (startDate :string, endDate: string) => {
         };
     });
 
-    // Convert the flattened data into CSV
+    const fields = ['name', 'price', 'warehouse', 'location', 'quantity', 'lowStockThreshold'];
     const parser = new Parser({ fields });
     const csv = parser.parse(flattenedData);
-    return csv
+    return csv;
 };
 
 /**
- * Generates a PDF report of inventory data and sends it as a response.
- * 
- * @param {Response} res - The response object used to send the PDF file.
- * @param {string} startDate - The start date for filtering inventory records.
- * @param {string} endDate - The end date for filtering inventory records.
- * 
- * This function creates a PDF document that includes an inventory report, 
- * with fields such as name and price. It fetches data from the database, 
- * optionally filtering by the provided date range. The PDF is then sent 
- * as a response to the client.
+ * Generates a PDF report of inventory data and sends it in the response.
+ * @param {Response} res - The response object to send the PDF.
+ * @param {string} startDate - The start date for filtering inventory.
+ * @param {string} endDate - The end date for filtering inventory.
+ * @returns {Promise<void>} - A promise that resolves when the PDF is sent.
  */
-export const pdfReport = async (res: Response, startDate :string, endDate :string) => {
+export const pdfReport = async (res: Response, startDate: string, endDate: string) => {
     const doc = new PDFDocument();
     const fileName = 'inventory-report.pdf';
     
@@ -296,12 +315,10 @@ export const pdfReport = async (res: Response, startDate :string, endDate :strin
     doc.fontSize(20).text('Inventory Report', { align: 'center' });
     doc.moveDown();
     
-    let inventoryData :Array<IInventory> = await Inventory.find({}).lean();
+    let inventoryData: IInventory[] = await inventoryRepository.find();
 
-    if(startDate && endDate){
-        inventoryData = await fetchProductWithTimeStamp(startDate, endDate);     
-    } else {
-        inventoryData = await getAllInventory();
+    if (startDate && endDate) {
+        inventoryData = await fetchProductWithTimeStamp(startDate, endDate);
     }
 
     inventoryData.forEach(item => {

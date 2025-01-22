@@ -1,6 +1,7 @@
 import { type IUser } from "../../user/user.dto";
 import jwt from "jsonwebtoken";
 import createHttpError from "http-errors";
+import { User } from "../../user/user.entity";
 
 
 const getEnvTokens = () => {
@@ -11,12 +12,11 @@ const getEnvTokens = () => {
     return { REFRESH_TOKEN, ACCESS_TOKEN };
 }
 
-export const generateAccessTokenAndRefreshToken = async (user : IUser, access: string = '1h') => {
+export const generateAccessTokenAndRefreshToken = async (user : User, access: string = '1h') => {
     const { REFRESH_TOKEN, ACCESS_TOKEN } = getEnvTokens();
-    console.log("in jwt helper: ", ACCESS_TOKEN);
-    
+
     const payload = {
-        _id: user._id,
+        id: user.id,
         role: user.role,
     }
     

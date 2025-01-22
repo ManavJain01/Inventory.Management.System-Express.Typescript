@@ -1,7 +1,8 @@
-import { type BaseSchema } from "../common/dto/base.dto";
-
-export interface IWarehouse extends BaseSchema {
+export interface IWarehouse {
+    id: number;
     name: string;
     location: string;
-    managerId: object;
+    managerId: number;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

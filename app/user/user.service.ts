@@ -1,83 +1,93 @@
 import { type IUser } from "./user.dto";
-import { User } from "./user.schema";
 import { generateAccessTokenAndRefreshToken } from "../common/helper/jwt.helper";
+import { User } from "./user.entity";
+import { AppDataSource } from "../common/services/data-source";
 
 /**
- * Creates a new user and generates access and refresh tokens.
- * @param {IUser} data - The user data to be saved in the database.
- * @returns {Promise<{ user: User, accessToken: string, refreshToken: string }>} The created user object along with the generated tokens.
+ * Creates a new user.
+ * @param {IUser} data - The user data to create.
+ * @returns {Promise<{ user: IUser, accessToken: string, refreshToken: string }>} - The created user and tokens.
  */
 export const createUser = async (data: IUser) => {
-    const result = await User.create({ ...data });
-
+    const userRepository = AppDataSource.getRepository(User);
+    const result = await userRepository.save(userRepository.create(data));
     const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(result, "userCreating");
-
     result.refreshToken = refreshToken;
-
-    await result.save();
-
+    await userRepository.save(result);
     return { user: result, accessToken, refreshToken };
 };
 
 /**
- * Updates an existing user.
- * @param {string} id - The ID of the user to be updated.
- * @param {IUser} data - The user data to be updated in the database.
- * @returns {Promise<User>} The updated user object.
+ * Updates an existing user by ID.
+ * @param {string} id - The ID of the user to update.
+ * @param {IUser} data - The data to update the user with.
+ * @returns {Promise<IUser>} - The updated user.
+ * @throws {Error} - If the user is not found.
  */
-export const updateUser = async (id: string, data: IUser) => {
-    const result = await User.findOneAndUpdate({ _id: id }, data, {
-        new: true,
-    });
+export const updateUser = async (id: number, data: IUser) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const result = await userRepository.findOneBy({ id });
+    if (!result) throw new Error("User not found");
+    Object.assign(result, data);
+    await userRepository.save(result);
     return result;
 };
 
 /**
- * Partially updates an existing user.
- * @param {string} id - The ID of the user to be updated.
- * @param {Partial<IUser>} data - The user data to be updated in the database.
- * @returns {Promise<User>} The updated user object.
+ * Partially updates an existing user by ID.
+ * @param {string} id - The ID of the user to edit.
+ * @param {Partial<IUser>} data - The partial data to edit the user with.
+ * @returns {Promise<IUser>} - The edited user.
+ * @throws {Error} - If the user is not found.
  */
-export const editUser = async (id: string, data: Partial<IUser>) => {
-    const result = await User.findOneAndUpdate({ _id: id }, data);
+export const editUser = async (id: number, data: Partial<IUser>) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const result = await userRepository.findOneBy({ id });
+    if (!result) throw new Error("User not found");
+    Object.assign(result, data);
+    await userRepository.save(result);
     return result;
 };
 
 /**
  * Deletes a user by ID.
- * @param {string} id - The ID of the user to be deleted.
- * @returns {Promise<Document | null>} The result of the deletion.
+ * @param {string} id - The ID of the user to delete.
+ * @returns {Promise<void>} - A promise that resolves when the user is deleted.
  */
-export const deleteUser = async (id: string) => {
-    const result = await User.deleteOne({ _id: id });
+export const deleteUser = async (id: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const result = await userRepository.delete(id);
     return result;
 };
 
 /**
  * Retrieves a user by ID.
- * @param {string} id - The ID of the user to be retrieved.
- * @returns {Promise<Document | null>} The user object if found, otherwise null.
+ * @param {string} id - The ID of the user to retrieve.
+ * @returns {Promise<IUser | null>} - The user, or null if not found.
  */
-export const getUserById = async (id: string) => {
-    const result = await User.findById(id).lean();
+export const getUserById = async (id: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const result = await userRepository.findOneBy({ id });
     return result;
 };
 
 /**
  * Retrieves all users.
- * @returns {Promise<Document[]>} The array of user objects.
+ * @returns {Promise<IUser[]>} - A list of all users.
  */
 export const getAllUser = async () => {
-    const result = await User.find({}).lean();
+    const userRepository = AppDataSource.getRepository(User);
+    const result = await userRepository.find();
     return result;
 };
 
 /**
  * Retrieves a user by email.
- * @param {string} email - The email of the user to be retrieved.
- * @returns {Promise<Document | null>} The user object if found, otherwise null.
+ * @param {string} email - The email of the user to retrieve.
+ * @returns {Promise<IUser | null>} - The user, or null if not found.
  */
 export const getUserByEmail = async (email: string) => {
-    const result = await User.findOne({ email }).lean();
+    const userRepository = AppDataSource.getRepository(User);
+    const result = await userRepository.findOneBy({ email });
     return result;
-}
+};

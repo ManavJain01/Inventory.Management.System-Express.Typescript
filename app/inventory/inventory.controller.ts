@@ -29,7 +29,7 @@ export const createInventory = asyncHandler(async (req: Request, res: Response) 
  * @returns {Promise<void>} - A promise that resolves when the inventory is updated and response is sent.
  */
 export const updateInventory = asyncHandler(async (req: Request, res: Response) => {
-    const result = await inventoryService.updateInventory(req.params.id, req.body);
+    const result = await inventoryService.updateInventory(Number(req.params.id), req.body);
     res.send(createResponse(result, "Inventory updated successfully"));
 });
 
@@ -40,7 +40,7 @@ export const updateInventory = asyncHandler(async (req: Request, res: Response) 
  * @returns {Promise<void>} - A promise that resolves when the inventory is updated and response is sent.
  */
 export const editInventory = asyncHandler(async (req: Request, res: Response) => {
-    const result = await inventoryService.editInventory(req.params.id, req.body);
+    const result = await inventoryService.editInventory(Number(req.params.id), req.body);
     res.send(createResponse(result, "Inventory updated successfully"))
 });
 
@@ -51,7 +51,7 @@ export const editInventory = asyncHandler(async (req: Request, res: Response) =>
  * @returns {Promise<void>} - A promise that resolves when the inventory is deleted and response is sent.
  */
 export const deleteInventory = asyncHandler(async (req: Request, res: Response) => {
-    const result = await inventoryService.deleteInventory(req.params.id);
+    const result = await inventoryService.deleteInventory(Number(req.params.id));
     res.send(createResponse(result, "Inventory deleted successfully"));
 });
 
@@ -63,7 +63,7 @@ export const deleteInventory = asyncHandler(async (req: Request, res: Response) 
  * @returns {Promise<void>} - A promise that resolves when the inventory is found and response is sent.
  */
 export const getInventoryById = asyncHandler(async (req: Request, res: Response) => {
-    const result = await inventoryService.getInventoryById(req.params.id);
+    const result = await inventoryService.getInventoryById(Number(req.params.id));
     res.send(createResponse(result))
 });
 
@@ -86,7 +86,7 @@ export const getAllInventory = asyncHandler(async (req: Request, res: Response) 
  * @returns {Promise<void>} - A promise that resolves when the warehouses are found and response is sent.
  */
 export const getWarehousesById = asyncHandler(async (req: Request, res: Response) => {
-    const result = await inventoryService.getWarehousesById(req.params.id as Object);
+    const result = await inventoryService.getWarehousesById(Number(req.params.id));
     res.send(createResponse(result))
 });
 

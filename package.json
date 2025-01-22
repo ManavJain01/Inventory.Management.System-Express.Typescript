@@ -10,6 +10,9 @@
     "doc": "jsdoc -c jsdoc.json",
     "swagger": "ts-node ./swagger/swagger.ts",
     "lint": "eslint . --ext .ts,.js --max-warnings=0",
+    "migration:generate": "npm run typeorm migration:generate -n",
+    "migration:run": "npm run typeorm migration:run",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "lint:fix": "eslint --fix --ext .js,.ts .",
     "format": "prettier . -w",
     "format:check": "prettier . --check",
@@ -32,6 +35,7 @@
     "@types/json2csv": "^5.0.7",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/morgan": "^1.9.4",
+    "@types/node": "^22.10.7",
     "@types/nodemailer": "^6.4.8",
     "@types/passport": "^1.0.12",
     "@types/passport-jwt": "^3.0.9",
@@ -51,7 +55,7 @@
     "jsdoc": "^4.0.4",
     "lint-staged": "^13.2.3",
     "prettier": "^3.0.0",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typescript": "*"
   },
   "dependencies": {
@@ -74,11 +78,14 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pdfkit": "^0.16.0",
+    "pg": "^8.13.1",
     "pnpm": "^9.15.4",
     "qrcode": "^1.5.4",
+    "reflect-metadata": "^0.2.2",
     "speakeasy": "^2.0.0",
     "swagger-autogen": "^2.23.7",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "typeorm": "^0.3.20"
   }
 }

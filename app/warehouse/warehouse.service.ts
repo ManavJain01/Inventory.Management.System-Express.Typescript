@@ -1,75 +1,82 @@
-import { sendEmail } from "../common/services/email.service";
-import { type IWarehouse } from "./warehouse.dto";
-import { Warehouse } from "./warehouse.schema";
+import { AppDataSource } from "../common/services/data-source";
+import { Warehouse } from "./warehouse.entity";
 
 /**
  * Creates a new warehouse.
- * @param {IWarehouse} data - The warehouse data to create.
- * @returns {Promise<{ inventory: IWarehouse }>} - The created warehouse object.
+ * @param {Partial<Warehouse>} data - The data of the warehouse to be created.
+ * @returns {Promise<{inventory: Warehouse}>} - A promise that resolves to the created warehouse.
  */
-export const createWarehouse = async (data: IWarehouse) => {
-    const result = await Warehouse.create({ ...data });
-
-    await result.save();
-
+export const createWarehouse = async (data: Partial<Warehouse>) => {
+    const warehouseRepository = AppDataSource.getRepository(Warehouse);
+    const newWarehouse = warehouseRepository.create(data);
+    const result = await warehouseRepository.save(newWarehouse);
     return { inventory: result };
 };
 
 /**
- * Updates an existing warehouse by its ID.
- * @param {string} id - The ID of the warehouse to update.
- * @param {IWarehouse} data - The new warehouse data.
- * @returns {Promise<IWarehouse | null>} - The updated warehouse object, or null if not found.
+ * Updates an existing warehouse.
+ * @param {number} id - The ID of the warehouse to be updated.
+ * @param {Partial<Warehouse>} data - The data to be updated.
+ * @returns {Promise<Warehouse>} - A promise that resolves to the updated warehouse.
  */
-export const updateWarehouse = async (id: string, data: IWarehouse) => {
-    const result = await Warehouse.findOneAndUpdate({ _id: id }, data, {
-        new: true,
-    });
-    return result;
-};
+export const updateWarehouse = async (id: number, data: Partial<Warehouse>) => {
+    const warehouseRepository = AppDataSource.getRepository(Warehouse);
+    const warehouse = await warehouseRepository.findOneBy({ id });
 
-/**
- * Partially updates an existing warehouse by its ID.
- * @param {string} id - The ID of the warehouse to update.
- * @param {Partial<IWarehouse>} data - The partial data to update.
- * @returns {Promise<IWarehouse>} - The updated warehouse object.
- * @throws {Error} - If the warehouse is not found.
- */
-export const editWarehouse = async (id: string, data: Partial<IWarehouse>) => {
-    const result = await Warehouse.findOneAndUpdate({ _id: id }, data);
-
-    if (!result) {
+    if (!warehouse) {
         throw new Error("Warehouse not found");
     }
 
+    const updatedWarehouse = await warehouseRepository.save({ ...warehouse, ...data });
+    return updatedWarehouse;
+};
+
+/**
+ * Updates an existing warehouse with partial data.
+ * @param {number} id - The ID of the warehouse to be updated.
+ * @param {Partial<Warehouse>} data - The partial data to be updated.
+ * @returns {Promise<Warehouse>} - A promise that resolves to the updated warehouse.
+ */
+export const editWarehouse = async (id: number, data: Partial<Warehouse>) => {
+    const warehouseRepository = AppDataSource.getRepository(Warehouse);
+    const result = await warehouseRepository.update({ id }, data);
+
+    if (result.affected === 0) {
+        throw new Error("Warehouse not found");
+    }
+
+    const updatedWarehouse = await warehouseRepository.findOneBy({ id });
+    return updatedWarehouse;
+};
+
+/**
+ * Deletes a warehouse.
+ * @param {number} id - The ID of the warehouse to be deleted.
+ * @returns {Promise<DeleteResult>} - A promise that resolves to the result of the deletion.
+ */
+export const deleteWarehouse = async (id: number) => {
+    const warehouseRepository = AppDataSource.getRepository(Warehouse);
+    const result = await warehouseRepository.delete({ id });
     return result;
 };
 
 /**
- * Deletes a warehouse by its ID.
- * @param {string} id - The ID of the warehouse to delete.
- * @returns {Promise<{ deletedCount?: number }>} - The result of the deletion operation.
+ * Retrieves a warehouse by ID.
+ * @param {number} id - The ID of the warehouse to be retrieved.
+ * @returns {Promise<Warehouse | null>} - A promise that resolves to the warehouse if found, otherwise null.
  */
-export const deleteWarehouse = async (id: string) => {
-    const result = await Warehouse.deleteOne({ _id: id });
-    return result;
-};
-
-/**
- * Retrieves a warehouse by its ID.
- * @param {string} id - The ID of the warehouse to retrieve.
- * @returns {Promise<IWarehouse | null>} - The found warehouse object, or null if not found.
- */
-export const getWarehouseById = async (id: string) => {
-    const result = await Warehouse.findById(id).lean();
+export const getWarehouseById = async (id: number) => {
+    const warehouseRepository = AppDataSource.getRepository(Warehouse);
+    const result = await warehouseRepository.findOneBy({ id });
     return result;
 };
 
 /**
  * Retrieves all warehouses.
- * @returns {Promise<IWarehouse[]>} - An array of all warehouse objects.
+ * @returns {Promise<Warehouse[]>} - A promise that resolves to an array of all warehouses.
  */
 export const getAllWarehouse = async () => {
-    const result = await Warehouse.find({}).lean();
+    const warehouseRepository = AppDataSource.getRepository(Warehouse);
+    const result = await warehouseRepository.find();
     return result;
 };
