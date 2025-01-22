@@ -1,6 +1,7 @@
-import { type BaseSchema } from "../common/dto/base.dto";
-
-export interface IInventory extends BaseSchema {
+export interface IInventory {
+    id: number;
     name: string;
     price: number;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

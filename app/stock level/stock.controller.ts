@@ -38,7 +38,7 @@ export const createStock = asyncHandler(async (req: Request, res: Response) => {
  * @returns {Promise<Response>}
  */
 export const updateStock = asyncHandler(async (req: Request, res: Response) => {
-    const result = await stockService.updateStock(req.params.id, req.body);
+    const result = await stockService.updateStock(Number(req.params.id), req.body);
     res.send(createResponse(result, "Stock updated successfully"))
 });
 
@@ -54,7 +54,7 @@ export const updateStock = asyncHandler(async (req: Request, res: Response) => {
  * @returns {Promise<Response>}
  */
 export const editStock = asyncHandler(async (req: Request, res: Response) => {
-    const result = await stockService.editStock(req.params.id, req.body);
+    const result = await stockService.editStock(Number(req.params.id), req.body);
     res.send(createResponse(result, "Stock updated successfully"))
 });
 
@@ -64,7 +64,7 @@ export const editStock = asyncHandler(async (req: Request, res: Response) => {
  * @returns {Promise<Response>}
  */
 export const deleteStock = asyncHandler(async (req: Request, res: Response) => {
-    const result = await stockService.deleteStock(req.params.id);
+    const result = await stockService.deleteStock(Number(req.params.id));
     res.send(createResponse(result, "Stock deleted successfully"))
 });
 
@@ -75,7 +75,7 @@ export const deleteStock = asyncHandler(async (req: Request, res: Response) => {
  * @returns {Promise<Response>}
  */
 export const getStockById = asyncHandler(async (req: Request, res: Response) => {
-    const result = await stockService.getStockById(req.params.id);
+    const result = await stockService.getStockById(Number(req.params.id));
     res.send(createResponse(result))
 });
 

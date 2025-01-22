@@ -22,7 +22,7 @@ export const createWarehouse = asyncHandler(async (req: Request, res: Response) 
  * @returns {Promise<void>} - A promise that resolves when the warehouse is updated and response is sent.
  */
 export const updateWarehouse = asyncHandler(async (req: Request, res: Response) => {
-    const result = await warehouseService.updateWarehouse(req.params.id, req.body);
+    const result = await warehouseService.updateWarehouse(Number(req.params.id), req.body);
     res.send(createResponse(result, "Warehouse updated successfully"))
 });
 
@@ -33,7 +33,7 @@ export const updateWarehouse = asyncHandler(async (req: Request, res: Response) 
  * @returns {Promise<void>} - A promise that resolves when the warehouse is updated and response is sent.
  */
 export const editWarehouse = asyncHandler(async (req: Request, res: Response) => {
-    const result = await warehouseService.editWarehouse(req.params.id, req.body);
+    const result = await warehouseService.editWarehouse(Number(req.params.id), req.body);
     res.send(createResponse(result, "Warehouse updated successfully"))
 });
 
@@ -44,7 +44,7 @@ export const editWarehouse = asyncHandler(async (req: Request, res: Response) =>
  * @returns {Promise<void>} - A promise that resolves when the warehouse is deleted and response is sent.
  */
 export const deleteWarehouse = asyncHandler(async (req: Request, res: Response) => {
-    const result = await warehouseService.deleteWarehouse(req.params.id);
+    const result = await warehouseService.deleteWarehouse(Number(req.params.id));
     res.send(createResponse(result, "Warehouse deleted successfully"))
 });
 
@@ -55,7 +55,7 @@ export const deleteWarehouse = asyncHandler(async (req: Request, res: Response) 
  * @returns {Promise<void>} - A promise that resolves when the warehouse is found and response is sent.
  */
 export const getWarehouseById = asyncHandler(async (req: Request, res: Response) => {
-    const result = await warehouseService.getWarehouseById(req.params.id);
+    const result = await warehouseService.getWarehouseById(Number(req.params.id));
     res.send(createResponse(result))
 });
 

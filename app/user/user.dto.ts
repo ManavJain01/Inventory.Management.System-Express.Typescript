@@ -1,11 +1,12 @@
-import { type BaseSchema } from "../common/dto/base.dto";
-
-export interface IUser extends BaseSchema {
+export interface IUser {
+        id: number;
         name: string;
         email: string;
-        role: "USER" | "MANAGER" | "ADMIN";
-        password: string,
-        refreshToken: string | undefined
+        role: "USER" | "ADMIN" | "MANAGER";
+        password: string;
+        refreshToken: string | null;
+        createdAt?: Date;
+        updatedAt?: Date;
 }
 
 export const userEnum: ("USER" | "MANAGER" | "ADMIN")[] = ["USER", "MANAGER"];

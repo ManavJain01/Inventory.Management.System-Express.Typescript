@@ -40,7 +40,7 @@ export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
         });
     }
 
-    await authService.logoutUser((req.user as IUser)._id as string);
+    await authService.logoutUser((req.user as IUser).id);
     
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");

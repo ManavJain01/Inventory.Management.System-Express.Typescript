@@ -1,42 +1,83 @@
+import { AppDataSource } from "../common/services/data-source";
 import { type IStock } from "./stock.dto";
-import { Stock } from "./stock.schema";
+import { Stock } from "./stock.entity";
+
+const stockRepository = AppDataSource.getRepository(Stock);
 
 /**
  * Creates a new stock entry.
  * @param {IStock} data - The stock data to be created.
- * @returns {Promise<IStock>} - The newly created stock entry.
+ * @returns {Promise<{inventory: IStock}>} - The created stock entry.
+ * @throws {Error} - If the stock entry is not created.
  */
 export const createStock = async (data: IStock) => {
-    const result = await Stock.create({ ...data });
-
-    await result.save();
+    const stock = stockRepository.create(data);
+    const result = await stockRepository.save(stock);
 
     return { inventory: result };
 };
 
 /**
- * Updates an existing stock entry.
- * @param {string} id - The ID of the stock entry to be updated.
- * @param {IStock} data - The updated stock data.
+ * Updates an existing stock entry by its ID.
+ * @param {string} id - The ID of the stock entry to update.
+ * @param {IStock} data - The stock data to update.
  * @returns {Promise<IStock>} - The updated stock entry.
+ * @throws {Error} - If the stock entry is not found or not updated.
  */
-export const updateStock = async (id: string, data: IStock) => {
-    const result = await Stock.findOneAndUpdate({ _id: id }, data, {
-        new: true,
-    });
-    return result;
+export const updateStock = async (id: number, data: IStock) => {
+    const result = await stockRepository.update(id, data);
+    if (result.affected === 0) {
+        throw new Error("Stock not found");
+    }
+
+    const updatedStock = await stockRepository.findOneBy({ id });
+    return updatedStock;
 };
 
 /**
- * Partially updates an existing stock entry.
- * @param {string} id - The ID of the stock entry to be updated.
- * @param {Partial<IStock>} data - The partial updated stock data.
+ * Partially updates an existing stock entry by its ID.
+ * @param {string} id - The ID of the stock entry to update.
+ * @param {Partial<IStock>} data - The partial stock data to update. Only the fields provided will be updated.
  * @returns {Promise<IStock>} - The updated stock entry.
+ * @throws {Error} - If the stock entry is not found or not updated.
  */
-export const editStock = async (id: string, data: Partial<IStock>) => {
-    const result = await Stock.findOneAndUpdate({ _id: id }, data);
+export const editStock = async (id: number, data: Partial<IStock>) => {
+    const result = await stockRepository.update(id, data);
 
-    if(!result){
+    if (result.affected === 0) {
+        throw new Error("Stock not found");
+    }
+
+    const updatedStock = await stockRepository.findOneBy({ id });
+    return updatedStock;
+};
+
+/**
+ * Deletes a stock entry by its ID.
+ * @param {string} id - The ID of the stock entry to delete.
+ * @returns {Promise<{message: string}>} - The deletion result.
+ * @throws {Error} - If the stock entry is not found or not deleted.
+ */
+export const deleteStock = async (id: number) => {
+    const result = await stockRepository.delete(id);
+
+    if (result.affected === 0) {
+        throw new Error("Stock not found");
+    }
+
+    return { message: "Stock deleted successfully" };
+};
+
+/**
+ * Gets a stock entry by its ID.
+ * @param {string} id - The ID of the stock entry to retrieve.
+ * @returns {Promise<IStock>} - The retrieved stock entry.
+ * @throws {Error} - If the stock entry is not found.
+ */
+export const getStockById = async (id: number) => {
+    const result = await stockRepository.findOneBy({ id });
+
+    if (!result) {
         throw new Error("Stock not found");
     }
 
@@ -44,30 +85,10 @@ export const editStock = async (id: string, data: Partial<IStock>) => {
 };
 
 /**
- * Deletes a stock entry.
- * @param {string} id - The ID of the stock entry to be deleted.
- * @returns {Promise<DeleteResult>} - The result of the deletion.
- */
-export const deleteStock = async (id: string) => {
-    const result = await Stock.deleteOne({ _id: id });
-    return result;
-};
-
-/**
- * Gets a stock entry by its ID.
- * @param {string} id - The ID of the stock entry to be fetched.
- * @returns {Promise<IStock>} - The stock entry.
- */
-export const getStockById = async (id: string) => {
-    const result = await Stock.findById(id).lean();
-    return result;
-};
-
-/**
  * Gets all stock entries.
- * @returns {Promise<IStock[]>} - An array of all stock entries.
+ * @returns {Promise<IStock[]>} - The retrieved stock entries.
  */
 export const getAllStock = async () => {
-    const result = await Stock.find({}).lean();
+    const result = await stockRepository.find();
     return result;
 };
