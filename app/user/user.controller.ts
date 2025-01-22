@@ -5,6 +5,13 @@ import asyncHandler from "express-async-handler";
 import { type Request, type Response } from 'express'
 
 /**
+ * @file user.controller.ts
+ * @author Adebayo Ademola <https://github.com/adebayo>
+ * @since 0.0.1
+ * @description user controller
+ */
+
+/**
  * Creates a new user.
  * @param {Request} req - The request object containing user data in the body.
  * @param {Response} res - The response object to send the result of the creation.

@@ -1,7 +1,7 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 // import swaggerJsonFile from "../swagger-output.json"
-import swaggerJsonFile from "../docs/swagger.json"
+import swaggerJsonFile from "../swagger/swagger.json"
 
 // Routes
 import userRoutes from "./user/user.route";

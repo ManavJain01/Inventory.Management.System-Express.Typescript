@@ -57,7 +57,7 @@ const initApp = async (): Promise<void> => {
   // error handler
   app.use(errorHandler);
   http.createServer(app).listen(port, () => {
-    console.log("Server is runnuing on port", port);
+    console.log("Server is running on port", port);
   });
 };
 
