@@ -6,8 +6,9 @@ import { roleAuthMiddleware } from "../common/middleware/role-auth.middleware";
 
 const router = Router();
 
+router.post("/signup", authValidation.signupUser, catchError, authController.signupUser);
 router.post("/login", authValidation.loginUser, catchError, authController.loginUser);
-router.post("/logout", catchError, roleAuthMiddleware(["USER", "ADMIN"]), authController.logoutUser);
+router.post("/logout", catchError, roleAuthMiddleware(["USER", "ADMIN", "MANAGER"]), authController.logoutUser);
 router.post("/forgot-password", catchError, authController.forgotPassword);
 router.post("/reset-password", authValidation.resetPassword, catchError, authController.resetPassword);
 router.post("/refresh-token", catchError, authController.refreshAccessToken);

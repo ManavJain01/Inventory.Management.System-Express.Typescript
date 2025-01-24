@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import morgan from "morgan";
 import http from "http";
 import cookieParser from "cookie-parser"
+import cors from 'cors';
 
 import { initDB } from "./app/common/services/database.service";
 import { initPassport } from "./app/common/services/passport-jwt.service";
@@ -27,6 +28,12 @@ const port = Number(process.env.PORT) ?? 5000;
 
 const app: Express = express();
 
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173'], // Allow specific origins
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true, // Allow credentials (e.g., cookies)
+}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());

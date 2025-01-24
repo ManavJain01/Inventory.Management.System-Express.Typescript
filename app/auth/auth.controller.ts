@@ -15,6 +15,11 @@ import { IUser } from "../user/user.dto";
  * @description auth controller
  */
 
+export const signupUser = asyncHandler(async (req: Request, res: Response) => {
+    const result = await authService.signupUser(req.body);
+    res.send(createResponse(result, "User signup sucssefully"))
+});
+
 /**
  * @function loginUser
  * @description Logs in a user by validating their credentials and generating tokens.
@@ -85,8 +90,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
  * @returns {Promise<void>} - A promise that resolves if the password is reset successfully.
  */
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
-    const token = req.headers.authorization?.replace("Bearer ", "") || req.cookies?.accessToken;
-    const { password } = req.body;  // Get the new password from request body  
+    const { password, token } = req.body;  // Get the new password from request body  
   
     // Verify the token
     const decodedUser = await decodeAccessToken(token) as IUser;

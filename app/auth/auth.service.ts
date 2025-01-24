@@ -26,6 +26,18 @@ export const isCorrectPassword = async (dbPassword: string, incomingPassword: st
     else return false;
 }
 
+export const signupUser = async (data: IUser) => {
+    const result = await User.create({ ...data });
+
+    const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(result, "userCreating");
+
+    result.refreshToken = refreshToken;
+
+    await result.save();
+
+    return { user: result, accessToken, refreshToken };
+};
+
 /**
  * Logs in a user by validating their credentials and generating tokens.
  * 
