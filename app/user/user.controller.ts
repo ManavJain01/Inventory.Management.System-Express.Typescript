@@ -78,3 +78,8 @@ export const getAllUser = asyncHandler(async (req: Request, res: Response) => {
     const result = await userService.getAllUser();
     res.send(createResponse(result))
 });
+
+export const showManagers = asyncHandler(async (req: Request, res: Response) => {
+    const result = await userService.showManagers();
+    res.send(createResponse(result))
+});

@@ -134,7 +134,48 @@ export const getInventoryById = async (id: string) => {
  * @returns {Promise<IInventory[]>} - An array of retrieved inventory items.
  */
 export const getAllInventory = async () => {
-    const result = await Inventory.find({}).lean();
+    // const result = await Inventory.find({}).populate("warehouses").lean();
+    const result = await Inventory.aggregate([
+        {
+          $lookup: {
+            from: "stocks", // Name of the Stock collection
+            localField: "_id", // Field in Inventory collection
+            foreignField: "product_id", // Field in Stock collection
+            as: "stockDetails" // Alias for joined data
+          }
+        },
+        {
+          $unwind: "$stockDetails" // Deconstruct array of stockDetails
+        },
+        {
+          $lookup: {
+            from: "warehouses", // Name of the Warehouse collection
+            localField: "stockDetails.warehouse_id", // Warehouse reference from Stock
+            foreignField: "_id", // Warehouse _id field
+            as: "warehouseDetails" // Alias for joined data
+          }
+        },
+        {
+          $unwind: "$warehouseDetails" // Deconstruct array of warehouseDetails
+        },
+        {
+            $addFields: {
+                warehouseDetails: {
+                    quantity: "$stockDetails.quantity", // Include quantity from stockDetails
+                    lowStockThreshold: "$stockDetails.lowStockThreshold" // Include lowStockThreshold from stockDetails
+                }
+            }
+        },
+        {
+          $group: {
+            _id: "$_id",
+            name: { $first: "$name" },
+            price: { $first: "$price" },
+            warehouses: { $push: "$warehouseDetails" }
+          }
+        }
+      ]);
+      
     return result;
 };
 

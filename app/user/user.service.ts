@@ -81,3 +81,8 @@ export const getUserByEmail = async (email: string) => {
     const result = await User.findOne({ email }).lean();
     return result;
 }
+
+export const showManagers = async () => {
+    const result = await User.find({ role: "MANAGER" }).lean();
+    return result;
+}

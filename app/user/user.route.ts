@@ -7,6 +7,7 @@ import { userEnum } from "./user.dto";
 
 const router = Router();
 
+router.get("/managers/", roleAuthMiddleware([...userEnum]), userController.showManagers);
 router.get("/", roleAuthMiddleware([...userEnum]), userController.getAllUser);
 router.get("/:id", roleAuthMiddleware([...userEnum]), userController.getUserById);
 router.delete("/:id", roleAuthMiddleware([...userEnum]), userController.deleteUser);
