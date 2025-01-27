@@ -1,6 +1,9 @@
 import { sendEmail } from "../common/services/email.service";
 import { type IWarehouse } from "./warehouse.dto";
 import { Warehouse } from "./warehouse.schema";
+import { Inventory } from "../inventory/inventory.schema"
+import { Stock } from "../stock level/stock.schema";
+import mongoose from "mongoose";
 
 /**
  * Creates a new warehouse.
@@ -71,5 +74,43 @@ export const getWarehouseById = async (id: string) => {
  */
 export const getAllWarehouse = async () => {
     const result = await Warehouse.find({}).lean();
+    return result;
+};
+
+export const showAllProductsByWarehouseId = async (warehouseId: string) => {
+    const result = await Stock.aggregate([
+        {
+            $match: {
+                warehouse_id: new mongoose.Types.ObjectId(warehouseId)
+            }
+        },
+        {
+            $lookup: {
+                from: "inventories",
+                localField: "product_id",
+                foreignField: "_id",
+                as: "productDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$productDetails",
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                product_id: 1,
+                warehouse_id: 1,
+                quantity: 1,
+                lowStockThreshold: 1,
+                name: "$productDetails.name",
+                price: "$productDetails.price",
+                // "productDetails.warehouses": 1,
+            },
+        },
+    ]);
+
     return result;
 };

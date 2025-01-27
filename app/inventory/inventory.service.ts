@@ -21,17 +21,18 @@ import { IWarehouse } from "../warehouse/warehouse.dto";
 export const createInventory = async (data: IProduct) => {
     const { name, price, warehouse_id, quantity, lowStockThreshold } = data;
 
-    if(!name || !price || !warehouse_id || !quantity || !lowStockThreshold){
-        throw new Error("Parameters Missing");
-    }
+    // if(!name || !price || !warehouse_id || !quantity || !lowStockThreshold){
+    //     throw new Error("Parameters Missing");
+    // }
 
     const product = await Inventory.create({ name, price });
 
     await product.save();
 
-    const stock = await Stock.create({ product_id: product._id, warehouse_id: warehouse_id, quantity: quantity, lowStockThreshold: lowStockThreshold })
+    // const stock = await Stock.create({ product_id: product._id, warehouse_id: warehouse_id, quantity: quantity, lowStockThreshold: lowStockThreshold })
 
-    return { inventory: product, stock };
+    // return { inventory: product, stock };
+    return { inventory: product };
 };
 
 /**
@@ -56,19 +57,19 @@ export const updateInventory = async (id: string, data: IProduct) => {
         throw new Error("Product not found");
     }
 
-    if(( quantity || lowStockThreshold ) && !warehouse_id){
-        throw new Error("warehouse_id missing");
-    } else if(warehouse_id && ( quantity || lowStockThreshold )){
-        const stockData = { quantity, lowStockThreshold }
-        const stock = await Stock.findOneAndUpdate({ "product_id" : id, "warehouse_id" : warehouse_id }, stockData);
+    // if(( quantity || lowStockThreshold ) && !warehouse_id){
+    //     throw new Error("warehouse_id missing");
+    // } else if(warehouse_id && ( quantity || lowStockThreshold )){
+    //     const stockData = { quantity, lowStockThreshold }
+    //     const stock = await Stock.findOneAndUpdate({ "product_id" : id, "warehouse_id" : warehouse_id }, stockData);
         
-        if(!stock) throw new Error("Stock Not Found");
+    //     if(!stock) throw new Error("Stock Not Found");
         
-        if(stock.quantity <= stock.lowStockThreshold){
-            const warehouse = await Warehouse.findById(warehouse_id);
-            await sendEmailForLowStock(product as IInventory, stock as IStock, warehouse as IWarehouse);
-        }
-    }
+    //     if(stock.quantity <= stock.lowStockThreshold){
+    //         const warehouse = await Warehouse.findById(warehouse_id);
+    //         await sendEmailForLowStock(product as IInventory, stock as IStock, warehouse as IWarehouse);
+    //     }
+    // }
 
     return product;
 };
@@ -90,19 +91,19 @@ export const editInventory = async (id: string, data: Partial<IProduct>) => {
         throw new Error("Product not found");
     }
 
-    if(( quantity || lowStockThreshold ) && !warehouse_id){
-        throw new Error("warehouse_id missing");
-    } else if(warehouse_id && ( quantity || lowStockThreshold )){
-        const stockData = { quantity, lowStockThreshold }
-        const stock = await Stock.findOneAndUpdate({ "product_id" : id, "warehouse_id" : warehouse_id }, stockData);
+    // if(( quantity || lowStockThreshold ) && !warehouse_id){
+    //     throw new Error("warehouse_id missing");
+    // } else if(warehouse_id && ( quantity || lowStockThreshold )){
+    //     const stockData = { quantity, lowStockThreshold }
+    //     const stock = await Stock.findOneAndUpdate({ "product_id" : id, "warehouse_id" : warehouse_id }, stockData);
         
-        if(!stock) throw new Error("Stock Not Found");
+    //     if(!stock) throw new Error("Stock Not Found");
         
-        if(stock.quantity <= stock.lowStockThreshold){
-            const warehouse = await Warehouse.findById(warehouse_id);
-            await sendEmailForLowStock(product as IInventory, stock as IStock, warehouse as IWarehouse);
-        }
-    }
+    //     if(stock.quantity <= stock.lowStockThreshold){
+    //         const warehouse = await Warehouse.findById(warehouse_id);
+    //         await sendEmailForLowStock(product as IInventory, stock as IStock, warehouse as IWarehouse);
+    //     }
+    // }
 
     return product;
 };
@@ -204,6 +205,14 @@ export const getWarehousesById = async (productId :object) => {
     }
 
     return warehouses;
+};
+
+export const filteredProducts = async (query: string) => {
+    const products = await Inventory.find({
+        name: { $regex: query, $options: "i" }, // "i" for case-insensitive
+    });
+
+    return products;
 };
 
 /**

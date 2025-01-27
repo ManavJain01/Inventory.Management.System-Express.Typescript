@@ -7,6 +7,7 @@ const router = Router();
 
 router.get("/", warehouseController.getAllWarehouse);
 router.get("/:id", warehouseController.getWarehouseById);
+router.get("/allProducts/:id", warehouseController.showAllProductsByWarehouseId);
 router.post("/", warehouseValidator.createInventory, catchError, warehouseController.createWarehouse);
 router.patch("/:id", warehouseValidator.editInventory, catchError, warehouseController.editWarehouse);
 router.put("/:id", warehouseValidator.updateInventory, catchError, warehouseController.updateWarehouse);

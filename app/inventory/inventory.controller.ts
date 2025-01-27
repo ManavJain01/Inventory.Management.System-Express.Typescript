@@ -90,6 +90,11 @@ export const getWarehousesById = asyncHandler(async (req: Request, res: Response
     res.send(createResponse(result))
 });
 
+export const filteredProducts = asyncHandler(async (req: Request, res: Response) => {
+    const result = await inventoryService.filteredProducts(req.query.query as string);
+    res.send(createResponse(result))
+});
+
 /**
  * Generates a CSV report of inventory data and sends it as a response.
  * @param {Request} req - The request object containing start and end date query parameters.

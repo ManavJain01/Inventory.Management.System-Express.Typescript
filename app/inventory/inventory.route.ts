@@ -8,6 +8,7 @@ const router = Router();
 router.get("/", inventoryController.getAllInventory);
 router.get("/report-csv", inventoryController.csvReport);
 router.get("/report-pdf", inventoryController.pdfReport);
+router.get("/search", inventoryController.filteredProducts);
 router.get("/:id", inventoryController.getInventoryById);
 router.get("/allwarehouses/:id", inventoryController.getWarehousesById);
 router.post("/", inventoryValidator.createInventory, catchError, inventoryController.createInventory);

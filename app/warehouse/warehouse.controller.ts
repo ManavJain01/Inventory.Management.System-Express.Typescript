@@ -76,3 +76,8 @@ export const getAllWarehouse = asyncHandler(async (req: Request, res: Response) 
     const result = await warehouseService.getAllWarehouse();
     res.send(createResponse(result))
 });
+
+export const showAllProductsByWarehouseId = asyncHandler(async (req: Request, res: Response) => {
+    const result = await warehouseService.showAllProductsByWarehouseId(req.params.id);
+    res.send(createResponse(result))
+});
